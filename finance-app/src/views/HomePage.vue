@@ -8,6 +8,9 @@
 
     <ion-content class="ion-padding">
       <p>Home works!</p>
+
+      <ion-button expand="block" router-link="/add-transaction">
+        เพิ่มรายการ
     </ion-button>
 
     </ion-content>
