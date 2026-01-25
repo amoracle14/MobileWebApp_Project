@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@ionic/vue':
-        specifier: ^8.7.17
-        version: 8.7.17(@stencil/core@4.41.3)(vue@3.5.27)
       '@ionic/vue-router':
         specifier: ^8.7.17
         version: 8.7.17(@stencil/core@4.41.3)(vue@3.5.27)

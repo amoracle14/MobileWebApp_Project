@@ -34,6 +34,14 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: 'profile',
         component: () => import('../views/ProfilePage.vue')
+      },
+      {
+        path: 'ai-analysis',
+        component: () => import('../views/AiAnalysisPage.vue') 
+      },
+      {
+        path: 'summary-analyst',
+        component: () => import('../views/SummaryAnalystPage.vue') 
       }
     ]
   },
