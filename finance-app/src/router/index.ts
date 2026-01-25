@@ -7,6 +7,8 @@ const routes: Array<RouteRecordRaw> = [
     path: '/',
     redirect: '/tabs/home'
   },
+
+  // ---------- Tabs ----------
   {
     path: '/tabs/',
     component: TabsPage,
@@ -45,6 +47,19 @@ const routes: Array<RouteRecordRaw> = [
       }
     ]
   },
+
+  // ---------- Quiz (อยู่นอก Tabs) ----------
+  {
+    path: '/quiz/:page(\\d+)',
+    component: () => import('@/views/QuizPage.vue')
+  },
+
+  {
+    path: '/result',
+    component: () => import('@/views/ResultPage.vue')
+  },
+
+  // ---------- Add Transaction ----------
   {
     path: '/add-transaction',
     component: () => import('../views/AddTransactionPage.vue')

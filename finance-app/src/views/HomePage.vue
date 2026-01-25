@@ -29,7 +29,7 @@
 </div>
 
         <div class="stats-badges">
-          <div class="test-quiz-card">
+          <div class="test-quiz-card" @click="$router.push('/quiz/1')">
             <p>แบบทดสอบ</p>
             <span>คุณคือนักออมแบบไหน</span>
             <ion-icon
@@ -241,6 +241,12 @@ position: relative;
 
   font-size: 1.2rem;
   color: #333;
+}
+.test-quiz-card{
+  cursor: pointer;
+}
+.test-quiz-card:active{
+  transform: scale(0.98);
 }
 .days-badge {
   position: absolute;
