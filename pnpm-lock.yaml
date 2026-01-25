@@ -8,9 +8,21 @@ importers:
 
   .:
     dependencies:
+      '@ionic/vue':
+        specifier: ^8.7.17
+        version: 8.7.17(@stencil/core@4.41.3)(vue-router@4.6.4(vue@3.5.27))(vue@3.5.27)
       '@ionic/vue-router':
         specifier: ^8.7.17
-        version: 8.7.17(@stencil/core@4.41.3)(vue@3.5.27)
+        version: 8.7.17(@stencil/core@4.41.3)(vue-router@4.6.4(vue@3.5.27))(vue@3.5.27)
+      chart.js:
+        specifier: ^4.5.1
+        version: 4.5.1
+      vue-chartjs:
+        specifier: ^5.3.3
+        version: 5.3.3(chart.js@4.5.1)(vue@3.5.27)
+      vue-router:
+        specifier: ^4.6.4
+        version: 4.6.4(vue@3.5.27)
 
 packages:
 
@@ -43,6 +55,9 @@ packages:
 
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
+
+  '@kurkle/color@0.3.4':
+    resolution: {integrity: sha512-M5UknZPHRu3DEDWoipU6sE8PdkZ6Z/S+v4dD+Ke8IaNlpdSQah50lz1KtcFBa2vsdOnwbbnxJwVM4wty6udA5w==}
 
   '@rollup/rollup-darwin-arm64@4.34.9':
     resolution: {integrity: sha512-0CY3/K54slrzLDjOA7TOjN1NuLKERBgk9nY5V34mhmuu673YNb+7ghaDUs6N0ujXR7fz5XaS5Aa6d2TNxZd0OQ==}
@@ -118,6 +133,9 @@ packages:
   '@vue/compiler-ssr@3.5.27':
     resolution: {integrity: sha512-Sj7h+JHt512fV1cTxKlYhg7qxBvack+BGncSpH+8vnN+KN95iPIcqB5rsbblX40XorP+ilO7VIKlkuu3Xq2vjw==}
 
+  '@vue/devtools-api@6.6.4':
+    resolution: {integrity: sha512-sGhTPMuXqZ1rVOk32RylztWkfXTRhuS7vgAKv0zjqk8gbsHkJ7xfFf+jbySxt7tWObEJwyKaHMikV/WGDiQm8g==}
+
   '@vue/reactivity@3.5.27':
     resolution: {integrity: sha512-vvorxn2KXfJ0nBEnj4GYshSgsyMNFnIQah/wczXlsNXt+ijhugmW+PpJ2cNPe4V6jpnBcs0MhCODKllWG+nvoQ==}
 
@@ -134,6 +152,10 @@ packages:
 
   '@vue/shared@3.5.27':
     resolution: {integrity: sha512-dXr/3CgqXsJkZ0n9F3I4elY8wM9jMJpP3pvRG52r6m0tu/MsAFIe6JpXVGeNMd/D9F4hQynWT8Rfuj0bdm9kFQ==}
+
+  chart.js@4.5.1:
+    resolution: {integrity: sha512-GIjfiT9dbmHRiYi6Nl2yFCq7kkwdkp1W/lp2J99rX0yo9tgJGn3lKQATztIjb5tVtevcBtIdICNWqlq5+E8/Pw==}
+    engines: {pnpm: '>=8'}
 
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
@@ -170,6 +192,17 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
+  vue-chartjs@5.3.3:
+    resolution: {integrity: sha512-jqxtL8KZ6YJ5NTv6XzrzLS7osyegOi28UGNZW0h9OkDL7Sh1396ht4Dorh04aKrl2LiSalQ84WtqiG0RIJb0tA==}
+    peerDependencies:
+      chart.js: ^4.1.1
+      vue: ^3.0.0-0 || ^2.7.0
+
+  vue-router@4.6.4:
+    resolution: {integrity: sha512-Hz9q5sa33Yhduglwz6g9skT8OBPii+4bFn88w6J+J4MfEo4KRRpmiNG/hHHkdbRFlLBOqxN8y8gf2Fb0MTUgVg==}
+    peerDependencies:
+      vue: ^3.5.0
+
   vue@3.5.27:
     resolution: {integrity: sha512-aJ/UtoEyFySPBGarREmN4z6qNKpbEguYHMmXSiOGk69czc+zhs0NF6tEFrY8TZKAl8N/LYAkd4JHVd5E/AsSmw==}
     peerDependencies:
@@ -199,18 +232,18 @@ snapshots:
       ionicons: 8.0.13
       tslib: 2.8.1
 
-  '@ionic/vue-router@8.7.17(@stencil/core@4.41.3)(vue@3.5.27)':
+  '@ionic/vue-router@8.7.17(@stencil/core@4.41.3)(vue-router@4.6.4(vue@3.5.27))(vue@3.5.27)':
     dependencies:
-      '@ionic/vue': 8.7.17(@stencil/core@4.41.3)(vue@3.5.27)
+      '@ionic/vue': 8.7.17(@stencil/core@4.41.3)(vue-router@4.6.4(vue@3.5.27))(vue@3.5.27)
     transitivePeerDependencies:
       - '@stencil/core'
       - vue
       - vue-router
 
-  '@ionic/vue@8.7.17(@stencil/core@4.41.3)(vue@3.5.27)':
+  '@ionic/vue@8.7.17(@stencil/core@4.41.3)(vue-router@4.6.4(vue@3.5.27))(vue@3.5.27)':
     dependencies:
       '@ionic/core': 8.7.17
-      '@stencil/vue-output-target': 0.10.7(@stencil/core@4.41.3)(vue@3.5.27)
+      '@stencil/vue-output-target': 0.10.7(@stencil/core@4.41.3)(vue-router@4.6.4(vue@3.5.27))(vue@3.5.27)
       ionicons: 8.0.13
     transitivePeerDependencies:
       - '@stencil/core'
@@ -218,6 +251,8 @@ snapshots:
       - vue-router
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
+
+  '@kurkle/color@0.3.4': {}
 
   '@rollup/rollup-darwin-arm64@4.34.9':
     optional: true
@@ -265,11 +300,12 @@ snapshots:
       '@rollup/rollup-win32-arm64-msvc': 4.34.9
       '@rollup/rollup-win32-x64-msvc': 4.34.9
 
-  '@stencil/vue-output-target@0.10.7(@stencil/core@4.41.3)(vue@3.5.27)':
+  '@stencil/vue-output-target@0.10.7(@stencil/core@4.41.3)(vue-router@4.6.4(vue@3.5.27))(vue@3.5.27)':
     dependencies:
       vue: 3.5.27
     optionalDependencies:
       '@stencil/core': 4.41.3
+      vue-router: 4.6.4(vue@3.5.27)
 
   '@vue/compiler-core@3.5.27':
     dependencies:
@@ -301,6 +337,8 @@ snapshots:
       '@vue/compiler-dom': 3.5.27
       '@vue/shared': 3.5.27
 
+  '@vue/devtools-api@6.6.4': {}
+
   '@vue/reactivity@3.5.27':
     dependencies:
       '@vue/shared': 3.5.27
@@ -324,6 +362,10 @@ snapshots:
       vue: 3.5.27
 
   '@vue/shared@3.5.27': {}
+
+  chart.js@4.5.1:
+    dependencies:
+      '@kurkle/color': 0.3.4
 
   csstype@3.2.3: {}
 
@@ -352,6 +394,16 @@ snapshots:
   source-map-js@1.2.1: {}
 
   tslib@2.8.1: {}
+
+  vue-chartjs@5.3.3(chart.js@4.5.1)(vue@3.5.27):
+    dependencies:
+      chart.js: 4.5.1
+      vue: 3.5.27
+
+  vue-router@4.6.4(vue@3.5.27):
+    dependencies:
+      '@vue/devtools-api': 6.6.4
+      vue: 3.5.27
 
   vue@3.5.27:
     dependencies:
