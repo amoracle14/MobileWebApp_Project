@@ -34,8 +34,12 @@
   </ion-page>
 </template>
 
+
 <script setup lang="ts">
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet, IonList } from '@ionic/vue';
 import { gridOutline, calendar, ellipse, home, list, listCircle, listSharp, logoTableau, micCircle, people, person, square, syncCircle, tabletLandscape, tabletLandscapeSharp, tabletPortraitSharp, triangle, grid } from 'ionicons/icons';
 import Tab1Page from './Tab1Page.vue';
 </script>
+
+
+
