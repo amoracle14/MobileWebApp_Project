@@ -12,7 +12,7 @@
     <ion-content class="main-content">
       <div class="form-container">
         
-        <ion-segment value="income" mode="ios" class="custom-segment">
+        <ion-segment v-model="selectedType" mode="ios" class="custom-segment">
           <ion-segment-button value="income">
             <ion-label>รายรับ</ion-label>
           </ion-segment-button>
@@ -76,6 +76,10 @@ import {
 } from '@ionic/vue';
 import { calendarOutline } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
+import { ref } from 'vue'
+
+const selectedType = ref('income')
+
 
 addIcons({
   'calendar-outline': calendarOutline
@@ -113,15 +117,21 @@ ion-title {
 }
 
 ion-segment-button {
-  --background: #ffffff;
-  --background-checked: #77d9e8;
-  --color: #77d9e8;
-  --color-checked: #ffffff;
-  --border-radius: 8px;
-  margin: 0 5px;
+  --background: #77d9e8;
+  --background-checked: #ffffff;
+
+  --color: #333;
+  --color-checked: #000000;
+
+  --border-radius: 10px;
   min-height: 45px;
-  border: 1px solid #e0e0e0;
+
+  border: 1.5px solid #77d9e8;
+
+  margin: 0 5px;
+  font-weight: 500;
 }
+
 
 /* จัดการ Label */
 .field-group {
