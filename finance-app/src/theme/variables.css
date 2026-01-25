@@ -1,8 +1,8 @@
-/* For information on how to create your own theme, please refer to:
-http://ionicframework.com/docs/theming/ */
+
 @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
 * {
   font-family: 'Kanit', sans-serif;
+}
 ion-tab-button.tab-selected {
   color: #74D7E9;
 }
@@ -22,4 +22,49 @@ ion-tab-button.tab-selected ion-icon {
 ion-tab-button.tab-selected ion-label {
   color: #74D7E9;
 }
+
+/* --- ปรับแต่ง Pop-up ให้เป็นธีมขาวสะอาด --- */
+
+/* พื้นหลังและกรอบของป๊อปอัพ */
+.white-theme-alert .alert-wrapper {
+  background-color: #ffffff !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* หัวข้อ (Header) */
+.white-theme-alert .alert-head {
+  padding-bottom: 10px;
+}
+
+.white-theme-alert .alert-title {
+  color: #1a1a1a !important;
+  font-weight: bold !important;
+  font-size: 1.2rem !important;
+}
+
+/* เนื้อหา (Message) */
+.white-theme-alert .alert-message {
+  color: #555555 !important;
+  font-size: 0.95rem !important;
+  line-height: 1.4;
+}
+/* ตั้งค่าสีปุ่มยืนยันการลบใน Pop-up ให้เป็นสีแดง */
+.white-theme-alert .confirm-delete-btn,
+.white-theme-alert .alert-button-role-destructive {
+  color: #ff4d4f !important; /* สีแดง */
+  font-weight: bold !important;
+}
+
+/* แถม: ปรับปุ่มยกเลิกให้เป็นสีเทาตามธีมขาว */
+.white-theme-alert .cancel-btn,
+.white-theme-alert .alert-button-role-cancel {
+  color: #888888 !important;
+  font-weight: 500 !important;
+}
+
+/* ทำให้พื้นหลังปุ่มโปร่งใส (กรณีบางเครื่องมีพื้นหลังปุ่มโผล่มา) */
+.white-theme-alert .alert-button {
+  background-color: transparent !important;
+
 }

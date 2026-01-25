@@ -61,7 +61,7 @@ const routes: Array<RouteRecordRaw> = [
 
   // ---------- Add Transaction ----------
   {
-    path: '/add-transaction',
+    path: '/add-transaction', 
     component: () => import('../views/AddTransactionPage.vue')
   }
 ]
