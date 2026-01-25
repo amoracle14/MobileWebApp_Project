@@ -37,8 +37,10 @@
               class="quiz-arrow"
             ></ion-icon>
           </div>
-          <div class="days-badge">698 วัน</div>
-          <div class="items-badge">1,986 รายการ</div>
+<div class="right-badges-group">
+    <div class="days-badge">698 วัน</div>
+    <div class="items-badge">1,986 รายการ</div>
+  </div>
         </div>
       </div>
 
@@ -120,7 +122,7 @@
               <div class="items">
                 <ion-card
                   style="
-                    border: 0.5px solid lightgrey;
+                    border: 0.1px solid lightgrey;
                     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
                     border-radius: 10px;
                     background-color: white;
@@ -203,6 +205,7 @@ const days = [
   overflow: hidden;
   
   color: #1D1D1F;
+    z-index: 1;
   
 }
 
@@ -338,6 +341,7 @@ const days = [
   padding: 8px 15px;
   border-radius: 12px;
   font-weight: bold;
+  font-size: 13px;
 }
 
 .items-badge {
@@ -350,12 +354,17 @@ const days = [
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   font-weight: bold;
+  font-size: 13px;
+  
 }
 
 /* เนื้อหาหลักด้านล่าง */
 .main-content {
   padding: 0 20px;
   background-color: white;
+  z-index: 5; /* อยู่หน้า header */
+
+ 
 }
 .section-title {
   font-weight: bold;
@@ -529,15 +538,78 @@ ion-card {
 }
 
 .amount.plus {
-  color: #2e7d32;
+  color: #34C759;
 }
 
 .amount.minus {
-  color: #d32f2f;
+  color: #d63939;
 }
 
 .time {
   font-size: 12px;
   color: #888;
 }
+/* 1. ปรับส่วนคอนเทนต์หลักให้ขยับขึ้นไปทับ Header */
+.main-content {
+  padding: 0 20px;
+  background-color: transparent; /* เปลี่ยนเป็นโปร่งใสเพื่อให้เห็นความลอย */
+  position: relative;
+  z-index: 100;         /* ตั้งค่าให้สูงมากๆ เพื่อให้อยู่หน้าสุด */
+  margin-top: -50px;
+      
+}
+
+/* 2. ปรับหัวข้อ "รายละเอียด" ให้เด่นขึ้น */
+.section-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  color: #1D1D1F;
+  padding-top: 0;      /* เอา padding ออกเพื่อให้ชิดด้านบน */
+  text-shadow: 0 1px 2px rgba(255,255,255,0.5); /* เพิ่มเงาจางๆ ให้ตัวหนังสืออ่านง่ายบนพื้นสีฟ้า */
+}
+
+/* 3. การ์ดรายการล่าสุด */
+.recent-card {
+  background: white;
+  border-radius: 15px;
+  padding: 15px;
+  /* เพิ่มเงาเข้มขึ้นเพื่อให้ดู "ลอย" ออกมาข้างหน้าสุด */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  margin-bottom: 15px;
+  color: #1D1D1F;
+  position: relative;
+}
+
+/* 4. ปรับ Header เพื่อเพิ่มพื้นที่ด้านล่าง (เผื่อไว้) */
+.header-container {
+  padding-bottom: 40px; /* เพิ่มพื้นที่ข้างล่างเพื่อให้พื้นหลังสีฟ้าคลุมลงมาถึง */
+  z-index: 1;
+  
+}
+/* สร้างกลุ่มสำหรับ Badge ฝั่งขวา */
+.right-badges-group {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column; 
+  gap: 8px;               
+  align-items: flex-end;  
+}
+
+
+.days-badge, .items-badge {
+  position: static;      
+  padding: 8px 15px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  white-space: nowrap;   
+}
+
+
+
+
+
 </style>
