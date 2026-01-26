@@ -3,30 +3,30 @@
     <ion-content :fullscreen="true">
       <div class="header-container">
         <img src="/Group 237.png" class="bg-decoration" />
-<div class="content-wrapper">
-    <div class="user-info">
-      <div class="profile-section">
-        <ion-avatar class="avatar">
-          <img src="/gojo.jpg" />
-        </ion-avatar>
-        <div class="wallet-balance">
-          <h2>฿ 15,960</h2>
-          <p>บัญชี : xxx-x-xx890-x</p>
-        </div>
-      </div>
-      <ion-icon :icon="menuOutline" class="menu-icon"></ion-icon>
-    </div>
+        <div class="content-wrapper">
+          <div class="user-info">
+            <div class="profile-section">
+              <ion-avatar class="avatar">
+                <img src="/gojo.jpg" />
+              </ion-avatar>
+              <div class="wallet-balance">
+                <h2>฿ 15,960</h2>
+                <p>บัญชี : xxx-x-xx890-x</p>
+              </div>
+            </div>
+            <ion-icon :icon="menuOutline" class="menu-icon"></ion-icon>
+          </div>
 
-    <div class="wallet-card-main">
-      <div class="wallet-icon-container">
-        <img src="/wallet.png" class="wallet-img" />
-        <div class="wallet-text">
-          <h3>กระเป๋าตังที่ 1</h3>
-          <p>รายรับและรายจ่ายของฉัน</p>
+          <div class="wallet-card-main">
+            <div class="wallet-icon-container">
+              <img src="/wallet.png" class="wallet-img" />
+              <div class="wallet-text">
+                <h3>กระเป๋าตังที่ 1</h3>
+                <p>รายรับและรายจ่ายของฉัน</p>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-</div>
 
         <div class="stats-badges">
           <div class="test-quiz-card" @click="$router.push('/quiz/1')">
@@ -37,8 +37,10 @@
               class="quiz-arrow"
             ></ion-icon>
           </div>
-          <div class="days-badge">698 วัน</div>
-          <div class="items-badge">1,986 รายการ</div>
+<div class="right-badges-group">
+    <div class="days-badge">698 วัน</div>
+    <div class="items-badge">1,986 รายการ</div>
+  </div>
         </div>
       </div>
 
@@ -63,23 +65,23 @@
           </div>
         </div>
         <div class="recent-card">
-<div class="summary-card income">
-  <div class="summary-icon">
-    <img src="/dollars.png" class="summary-img" alt="income" />
-  </div>
-  
-  <div class="summary-text-container">
-    <div class="main-label">รายรับเดือนนี้</div>
-    
-    <div class="sub-detail">
-      <img src="/flag.png" class="mini-flag" />
-      <span class="sub-amount">25,960</span>
-      <span class="sub-currency">THB</span>
-    </div>
-  </div>
+          <div class="summary-card income">
+            <div class="summary-icon">
+              <img src="/dollars.png" class="summary-img" alt="income" />
+            </div>
 
-  <div class="summary-amount">25,960 <span>THB</span></div>
-</div>
+            <div class="summary-text-container">
+              <div class="main-label">รายรับเดือนนี้</div>
+
+              <div class="sub-detail">
+                <img src="/flag.png" class="mini-flag" />
+                <span class="sub-amount">25,960</span>
+                <span class="sub-currency">THB</span>
+              </div>
+            </div>
+
+            <div class="summary-amount">25,960 <span>THB</span></div>
+          </div>
 
           <div class="summary-card debt">
             <div class="summary-icon">
@@ -89,7 +91,63 @@
             <div class="summary-amount">10,895 <span>THB</span></div>
           </div>
         </div>
+        <div class="recent-card">
+          <div class="card-header">
+            <span><span class="dot"></span>การใช้จ่ายล่าสุด</span>
+          </div>
+          <!-- Day Cards -->
+          <ion-card
+            v-for="day in days"
+            :key="day.date"
+            style="box-shadow: none; background-color: white; "
+          >
+
+              <div class="day-header">
+                <div class="date">{{ day.date }}</div>
+                <div class="count">{{ day.items.length }} รายการ</div>
+              </div>
+
+              <div class="summary">
+                <ion-chip color="danger">
+                  <ion-label>{{ day.expense }} THB</ion-label>
+                </ion-chip>
+                <ion-chip color="success">
+                  <ion-label>{{ day.income }} THB</ion-label>
+                </ion-chip>
+                <ion-chip color="primary">
+                  <ion-label>คงเหลือ : {{ day.balance }} THB</ion-label>
+                </ion-chip>
+              </div>
+
+              <div class="items">
+                <ion-card
+                  style="
+                    border: 0.1px solid lightgrey;
+                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+                    border-radius: 10px;
+                    background-color: white;
+                  "
+                  v-for="item in day.items"
+                  :key="item.id"
+                  class="item-card"
+                >
+                  <ion-card-content>
+                    <div class="icon">{{ item.icon }}</div>
+                    <div class="name">{{ item.name }}</div>
+                    <div
+                      :class="['amount', item.amount < 0 ? 'minus' : 'plus']"
+                    >
+                      {{ item.amount }} THB
+                    </div>
+                    <div class="time">{{ item.time }}</div>
+                  </ion-card-content>
+                </ion-card>
+              </div>
+           
+          </ion-card>
+        </div>
       </div>
+
       <ion-fab vertical="bottom" horizontal="end" slot="fixed">
         <ion-button class="add-btn" router-link="/add-transaction">
           <ion-icon slot="start" :icon="addOutline"></ion-icon>
@@ -116,33 +174,59 @@ import {
   cashOutline,
   walletOutline,
 } from "ionicons/icons";
+
+const days = [
+  {
+    date: "12 ม.ค. 2026",
+    expense: -500,
+    income: 1500,
+    balance: 1000,
+    items: [
+      { id: 1, name: "อาหาร", amount: -500, time: "12:00", icon: "🍔" },
+      { id: 2, name: "รายได้", amount: 1000, time: "16:00", icon: "💰" },
+      { id: 3, name: 'ไลฟ์', amount: 500, time: '17:00', icon: '🎁' }
+
+    ],
+  },
+];
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+* {
+  font-family: 'Kanit', sans-serif;
+
+}
+
 .header-container {
   background: linear-gradient(90deg, #74d7e9 0%, #bff0f3 60%, #b2cff4 100%);
   padding: 50px 20px 30px 20px;
-position: relative; 
-  overflow: hidden;   
+  position: relative;
+  overflow: hidden;
+  
+  color: #1D1D1F;
+    z-index: 1;
+  
 }
 
 .bg-decoration {
   position: absolute;
   top: 20%;
   right: 0;
-  width: 85%;       
-  height: auto;  
-  z-index: 1;         
-  pointer-events: none; 
+  width: 85%;
+  height: auto;
+  z-index: 1;
+  pointer-events: none;
   opacity: 0.8;
 }
 .content-wrapper {
   position: relative;
-  z-index: 10;        
+  z-index: 10;
+  
 }
 .menu-icon {
   font-size: 2rem;
-  color: #333;
+  color: #1D1D1F;
 }
 .user-info {
   display: flex;
@@ -170,13 +254,13 @@ position: relative;
   font-weight: bold;
   font-size: 1.2rem;
   
-  
 }
 
 .wallet-balance p {
   margin: 0;
   font-size: 0.8rem;
   color: #666;
+ 
 }
 
 /* จุดที่ปรับปรุง: จัดให้รูปและข้อความอยู่บรรทัดเดียวกัน */
@@ -196,8 +280,7 @@ position: relative;
   margin: 0;
   font-weight: bold;
   font-size: 1.5rem;
-  color: #333;
-  
+  color: #1D1D1F;
 }
 
 .wallet-text p {
@@ -229,7 +312,7 @@ position: relative;
 }
 .test-quiz-card span {
   font-size: 0.75rem;
-  color: #666;
+  color: #1D1D1F;
 }
 .quiz-arrow {
   position: absolute;
@@ -240,23 +323,25 @@ position: relative;
   transform: translateY(-50%);
 
   font-size: 1.2rem;
-  color: #333;
+  color: #1D1D1F;
 }
-.test-quiz-card{
+.test-quiz-card {
   cursor: pointer;
+  color: #1D1D1F;
 }
-.test-quiz-card:active{
+.test-quiz-card:active {
   transform: scale(0.98);
 }
 .days-badge {
   position: absolute;
   top: 0;
   right: 0;
-  background: #333;
+  background: #1D1D1F;
   color: white;
   padding: 8px 15px;
   border-radius: 12px;
   font-weight: bold;
+  font-size: 13px;
 }
 
 .items-badge {
@@ -269,23 +354,32 @@ position: relative;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   font-weight: bold;
+  font-size: 13px;
+  
 }
 
 /* เนื้อหาหลักด้านล่าง */
 .main-content {
   padding: 0 20px;
+  background-color: white;
+  z-index: 5; /* อยู่หน้า header */
+
+ 
 }
 .section-title {
   font-weight: bold;
-  margin: 15px 0;
+  margin:0px 0;
+  color: #1D1D1F;
+  padding-top: 15px;
 }
 
 .recent-card {
-  background: white;
+  background: rgb(255, 255, 255);
   border-radius: 15px;
   padding: 15px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   margin-bottom: 15px;
+  color: #1D1D1F;
 }
 
 .card-header {
@@ -325,9 +419,10 @@ position: relative;
   padding: 12px;
   border-radius: 12px;
   margin-bottom: 10px;
+  color: #333;
 }
 .summary-img {
-  width: 32px;  /* ปรับขนาดรูปภาพ .png ตามต้องการ */
+  width: 32px; /* ปรับขนาดรูปภาพ .png ตามต้องการ */
   height: 32px;
   object-fit: contain;
 }
@@ -341,6 +436,7 @@ position: relative;
   flex-grow: 1;
   margin-left: 10px;
   font-weight: bold;
+  color: #333;
 }
 .summary-amount {
   font-weight: bold;
@@ -363,16 +459,15 @@ position: relative;
   margin-bottom: 10px; /* ระยะห่างจากบรรทัดล่าง */
 }
 
-
 .sub-detail {
   display: flex;
   align-items: center;
-  gap: 6px; 
+  gap: 6px;
   font-size: 13px;
 }
 
 .mini-flag {
-  width: 16px; 
+  width: 16px;
   height: auto;
   object-fit: contain;
 }
@@ -382,4 +477,139 @@ position: relative;
   font-weight: bold;
   --box-shadow: none;
 }
+ion-toolbar {
+  --background: linear-gradient(135deg, #6dd5ed, #c7eafd);
+}
+
+ion-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+ion-card {
+  margin: 16px;
+  color: #333;
+}
+
+.day-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.summary {
+  margin: 10px 0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.items {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 8px 0;
+}
+
+.item-card {
+  min-width: 120px;
+  margin: 0;
+  text-align: center;
+}
+
+.item-card ion-card-content {
+  padding: 12px;
+}
+
+.icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.name {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.amount {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.amount.plus {
+  color: #34C759;
+}
+
+.amount.minus {
+  color: #d63939;
+}
+
+.time {
+  font-size: 12px;
+  color: #888;
+}
+/* 1. ปรับส่วนคอนเทนต์หลักให้ขยับขึ้นไปทับ Header */
+.main-content {
+  padding: 0 20px;
+  background-color: transparent; /* เปลี่ยนเป็นโปร่งใสเพื่อให้เห็นความลอย */
+  position: relative;
+  z-index: 100;         /* ตั้งค่าให้สูงมากๆ เพื่อให้อยู่หน้าสุด */
+  margin-top: -50px;
+      
+}
+
+/* 2. ปรับหัวข้อ "รายละเอียด" ให้เด่นขึ้น */
+.section-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  color: #1D1D1F;
+  padding-top: 0;      /* เอา padding ออกเพื่อให้ชิดด้านบน */
+  text-shadow: 0 1px 2px rgba(255,255,255,0.5); /* เพิ่มเงาจางๆ ให้ตัวหนังสืออ่านง่ายบนพื้นสีฟ้า */
+}
+
+/* 3. การ์ดรายการล่าสุด */
+.recent-card {
+  background: white;
+  border-radius: 15px;
+  padding: 15px;
+  /* เพิ่มเงาเข้มขึ้นเพื่อให้ดู "ลอย" ออกมาข้างหน้าสุด */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  margin-bottom: 15px;
+  color: #1D1D1F;
+  position: relative;
+}
+
+/* 4. ปรับ Header เพื่อเพิ่มพื้นที่ด้านล่าง (เผื่อไว้) */
+.header-container {
+  padding-bottom: 40px; /* เพิ่มพื้นที่ข้างล่างเพื่อให้พื้นหลังสีฟ้าคลุมลงมาถึง */
+  z-index: 1;
+  
+}
+/* สร้างกลุ่มสำหรับ Badge ฝั่งขวา */
+.right-badges-group {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column; 
+  gap: 8px;               
+  align-items: flex-end;  
+}
+
+
+.days-badge, .items-badge {
+  position: static;      
+  padding: 8px 15px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  white-space: nowrap;   
+}
+
+
+
+
+
 </style>

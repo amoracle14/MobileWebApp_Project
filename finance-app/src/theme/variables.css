@@ -1,5 +1,29 @@
-/* For information on how to create your own theme, please refer to:
-http://ionicframework.com/docs/theming/ */
+
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+* {
+  font-family: 'Kanit', sans-serif;
+  
+}
+ion-tab-button.tab-selected {
+  color: #74D7E9;
+}
+ion-tab-button:hover ion-icon {
+  color: #74D7E9;
+}
+ion-tab-button:hover ion-label {
+  color: #74D7E9;
+}
+
+/* icon ตอนถูกเลือก */
+ion-tab-button.tab-selected ion-icon {
+  color: #74D7E9;
+}
+
+/* label ตอนถูกเลือก */
+ion-tab-button.tab-selected ion-label {
+  color: #74D7E9;
+}
+
 /* --- ปรับแต่ง Pop-up ให้เป็นธีมขาวสะอาด --- */
 
 /* พื้นหลังและกรอบของป๊อปอัพ */
@@ -43,4 +67,5 @@ http://ionicframework.com/docs/theming/ */
 /* ทำให้พื้นหลังปุ่มโปร่งใส (กรณีบางเครื่องมีพื้นหลังปุ่มโผล่มา) */
 .white-theme-alert .alert-button {
   background-color: transparent !important;
+
 }

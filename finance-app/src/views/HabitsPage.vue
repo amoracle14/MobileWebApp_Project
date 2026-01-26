@@ -4,7 +4,6 @@
       
       <div class="header-container">
         <div class="bg-decoration-circle"></div> 
-        
         <div class="content-wrapper">
             <div class="user-info">
               <div class="profile-section">
@@ -12,11 +11,10 @@
                   <img src="/gojo.jpg" alt="Profile" />
                 </ion-avatar>
                 <div class="wallet-balance">
-                  <h2>฿ 15,960</h2>
+                  <h2>฿ 400,000</h2>
                   <p>ยอดเงินคงเหลือสุทธิ</p>
                 </div>
               </div>
-              
               <ion-button shape="round" color="light" fill="solid" size="small" class="period-btn">
                 รายเดือน <ion-icon :icon="chevronDown" slot="end"></ion-icon>
               </ion-button>
@@ -31,7 +29,6 @@
                 <h3>ภาพรวมทางการเงิน</h3>
                 <span class="text-muted">กระแสเงินสด</span>
             </div>
-            
             <ion-card class="summary-card">
             <ion-card-content>
                 <ion-grid>
@@ -49,11 +46,11 @@
                     <div class="stats-text">
                         <div class="stat-item">
                         <span class="dot income"></span> <span class="label">รายรับ</span>
-                        <div class="value-text">50,000</div>
+                        <div class="value-text">1.25M</div>
                         </div>
                         <div class="stat-item">
                         <span class="dot expense"></span> <span class="label">รายจ่าย</span>
-                        <div class="value-text">34,040</div>
+                        <div class="value-text">850k</div>
                         </div>
                     </div>
                     </ion-col>
@@ -69,21 +66,21 @@
                 <ion-card class="mini-stat-card income-bg">
                 <ion-icon :icon="arrowDown" class="icon-down"></ion-icon>
                 <div class="label">รายรับ</div>
-                <div class="val">50,000</div>
+                <div class="val">1.25M</div>
                 </ion-card>
             </ion-col>
             <ion-col size="4">
                 <ion-card class="mini-stat-card expense-bg">
                 <ion-icon :icon="arrowUp" class="icon-up"></ion-icon>
                 <div class="label">รายจ่าย</div>
-                <div class="val">34,040</div>
+                <div class="val">850k</div>
                 </ion-card>
             </ion-col>
             <ion-col size="4">
                 <ion-card class="mini-stat-card balance-bg">
                 <ion-icon :icon="wallet" class="icon-wallet"></ion-icon>
                 <div class="label">คงเหลือ</div>
-                <div class="val">15,960</div>
+                <div class="val">400k</div>
                 </ion-card>
             </ion-col>
             </ion-row>
@@ -95,7 +92,6 @@
              รายงานฉบับเต็ม <ion-icon :icon="statsChart" slot="end"></ion-icon>
             </ion-button>
         </div>
-        
         <ion-card class="categories-card">
             <ion-card-content>
             <div class="bar-chart-container">
@@ -106,23 +102,35 @@
         </ion-card>
 
         <ion-card class="persona-card">
-            <ion-card-header>
-            <ion-card-title>
-                <ion-icon :icon="sparkles" class="ai-icon"></ion-icon> บทวิเคราะห์พฤติกรรม (AI)
-            </ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-            <h2 class="persona-title">รูปแบบการใช้จ่าย: The Foodie</h2>
-            <p class="persona-desc">
-                "ตรวจพบรายจ่ายในหมวดอาหารสูงกว่าเกณฑ์ปกติในระยะนี้ แนะนำให้ควบคุมงบประมาณเพื่อรักษาสภาพคล่องและบรรลุเป้าหมายทางการเงินที่ตั้งไว้"
-            </p>
-            <div class="see-more" @click="goToAIAnalysis">
-                อ่านบทวิเคราะห์ละเอียด <ion-icon :icon="arrowForward"></ion-icon>
-            </div>
-            </ion-card-content>
-        </ion-card>
-      </div>
+          <ion-card-content class="persona-content">
+            <div class="persona-layout">
+              <div class="ai-icon-box">
+                <img 
+                  src="https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg" 
+                  alt="Gemini Sparkle" 
+                  class="gemini-icon"
+                />
+              </div>
+              
+              <div class="ai-text-content">
+                <div class="ai-header">
+                  <div class="ai-label">บทวิเคราะห์พฤติกรรม (AI)</div>
+                  <div class="ai-tag">The Foodie</div>
+                </div>
+                
+                <p class="ai-message">
+                  "ตรวจพบรายจ่ายในหมวดอาหารสูงกว่าเกณฑ์ปกติในระยะนี้ แนะนำให้ควบคุมงบประมาณเพื่อรักษาสภาพคล่องและบรรลุเป้าหมายทางการเงินที่ตั้งไว้"
+                </p>
 
+                <div class="see-more" @click="goToAIAnalysis">
+                  อ่านบทวิเคราะห์ละเอียด <ion-icon :icon="arrowForward" size="small"></ion-icon>
+                </div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+      </div>
     </ion-content>
   </ion-page>
 </template>
@@ -131,12 +139,11 @@
 import { 
   IonPage, IonContent, 
   IonCard, IonCardContent, IonAvatar, IonButton, 
-  IonIcon, IonGrid, IonRow, IonCol, IonCardHeader, 
-  IonCardTitle
+  IonIcon, IonGrid, IonRow, IonCol
 } from '@ionic/vue';
 import { 
-  chevronDown, arrowDown, arrowUp, wallet, sparkles, 
-  arrowForward, statsChart 
+  chevronDown, arrowDown, arrowUp, wallet, 
+  arrowForward, statsChart
 } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import { 
@@ -171,14 +178,12 @@ const categoryChartOptions = {
   scales: { x: { display: false }, y: { grid: { display: false }, ticks: { font: { family: 'Kanit, sans-serif' } } } }
 };
 
-// --- Navigation (แก้ตรงนี้ให้แล้วครับ!) ---
+// --- Navigation ---
 const goToAIAnalysis = () => {
-  // ✅ ต้องมี /tabs/ นำหน้า
   router.push('/tabs/ai-analysis'); 
 };
 
 const goToSummary = () => {
-  // ✅ ต้องมี /tabs/ นำหน้า
   router.push('/tabs/summary-analyst'); 
 };
 </script>
@@ -249,17 +254,52 @@ const goToSummary = () => {
 .bar-chart-container { height: 180px; width: 100%; }
 .chart-note { text-align: center; font-size: 0.8rem; color: #636e72; margin-top: 15px; }
 
-/* AI Persona Card (Blue Gradient Theme) */
-.persona-card { 
-  background: linear-gradient(135deg, #e0f7fa 0%, #ffffff 100%); 
-  border: 1px solid #b2ebf2; 
-  border-radius: 20px; 
-  margin-top: 25px; 
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+/* 🔥 AI Card (Gemini Sparkle - No Background) 🔥 */
+.persona-card {
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: none;
+  margin-top: 25px;
+  overflow: visible; 
 }
 
-.persona-card h2 { font-weight: 800; font-size: 1rem; color: #006064; margin-top: 0; }
-.persona-desc { color: #546e7a; font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px; }
-.ai-icon { color: #00acc1; }
-.see-more { color: #00bcd4; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; cursor: pointer; }
+.persona-content { padding: 20px; }
+
+.persona-layout { display: flex; gap: 15px; align-items: flex-start; }
+
+/* 🌟 ปรับตรงนี้: พื้นหลังใส + จัดกลาง 🌟 */
+.ai-icon-box {
+  min-width: 45px;
+  height: 45px;
+  background: transparent; /* ใสปิ๊ง */
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ขนาดโลโก้ */
+.gemini-icon {
+  width: 35px; /* ปรับขนาดตามชอบ */
+  height: 35px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); /* เงาเล็กน้อยให้ดูมีมิติ */
+}
+
+.ai-text-content { flex: 1; }
+
+.ai-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+
+.ai-label {
+  font-size: 0.75rem; font-weight: 800; color: #b2bec3; text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.ai-tag {
+  background: #ffeaa7; color: #d35400; font-size: 0.7rem; font-weight: bold; padding: 2px 8px; border-radius: 8px;
+}
+
+.ai-message {
+  font-size: 0.9rem; color: #2d3436; line-height: 1.5; margin: 0 0 12px 0; font-weight: 500;
+}
+
+.see-more {
+  color: #0984e3; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; cursor: pointer; opacity: 0.9;
+}
 </style>
