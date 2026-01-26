@@ -12,7 +12,7 @@
     <ion-content class="main-content">
       <div class="form-container">
         
-        <ion-segment v-model="selectedType" mode="ios" class="custom-segment">
+        <ion-segment v-model="selectedType" mode="md" class="custom-segment">
           <ion-segment-button value="income">
             <ion-label>รายรับ</ion-label>
           </ion-segment-button>
@@ -23,6 +23,7 @@
             <ion-label>หนี้สิน</ion-label>
           </ion-segment-button>
         </ion-segment>
+        
 
         <div class="field-group">
           <div class="field-label">หมวดหมู่</div>
@@ -46,15 +47,17 @@
 
         <div class="field-group">
           <div class="field-label">รายละเอียด</div>
-          <ion-item lines="none" class="custom-textarea">
-            <ion-textarea placeholder="หมายเหตุ (ถ้ามี)" :rows="6"></ion-textarea>
+          <ion-item lines="none" class="custom-input">
+            <ion-textarea placeholder="หมายเหตุ (ถ้ามี)" :rows="4"></ion-textarea>
           </ion-item>
         </div>
 
-        <ion-item lines="none" class="date-display-box">
-          <ion-label>วันที่ 05 ม.ค. 2569</ion-label>
-          <ion-icon slot="end" name="calendar-outline" class="calendar-icon"></ion-icon>
-        </ion-item>
+        <div class="field-group">
+          <div class="date-input-wrapper">
+            <input type="date" v-model="selectedDate" class="date-input" />
+            <ion-icon name="calendar-outline" class="calendar-icon"></ion-icon>
+          </div>
+        </div>
 
         <div class="button-wrapper">
           <ion-button expand="block" class="submit-btn">
@@ -79,7 +82,7 @@ import { addIcons } from 'ionicons';
 import { ref } from 'vue'
 
 const selectedType = ref('income')
-
+const selectedDate = ref('')
 
 addIcons({
   'calendar-outline': calendarOutline
@@ -112,26 +115,29 @@ ion-title {
 
 /* ปรับแต่ง Segment (รายรับ/รายจ่าย/หนี้สิน) */
 .custom-segment {
+  --background: transparent;
   background: transparent;
   margin-bottom: 25px;
 }
 
 ion-segment-button {
-  --background: #77d9e8;
-  --background-checked: #ffffff;
-
+  --background: #ffffff;
+  --background-checked: #77d9e8;
   --color: #333;
-  --color-checked: #000000;
-
+  --color-checked: #ffffff;
   --border-radius: 10px;
+  --indicator-height: 0;
+  --indicator-color: transparent;
   min-height: 45px;
-
   border: 1.5px solid #77d9e8;
-
   margin: 0 5px;
   font-weight: 500;
 }
 
+ion-segment-button::part(indicator),
+ion-segment-button::part(indicator-background) {
+  display: none;
+}
 
 /* จัดการ Label */
 .field-group {
@@ -157,37 +163,65 @@ ion-segment-button {
 }
 
 /* ปรับแต่ง Input Box */
-.custom-input, .custom-textarea {
+.custom-input {
   --background: #ffffff;
+  background: #ffffff;
   border: 1px solid #eeeeee;
   border-radius: 10px;
   --padding-start: 12px;
+  --border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.custom-textarea {
-  align-items: flex-start;
-  padding-top: 8px;
+ion-select {
+  width: 100%;
 }
 
-/* ปรับแต่งส่วนแสดงวันที่ */
-.date-display-box {
-  margin-top: 10px;
+ion-select::part(icon) {
+  position: absolute;
+  right: 12px;
+}
+
+/* Date Input */
+.date-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.date-input {
+  width: 100%;
+  padding: 14px 12px;
   border: 1px solid #ccc;
-  border-radius: 8px;
-  --background: #ffffff;
+  border-radius: 10px;
+  background: #ffffff;
   font-size: 15px;
+  color: #333;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
 }
 
 .calendar-icon {
+  position: absolute;
+  right: 12px;
   color: #333;
   font-size: 24px;
+  pointer-events: none;
 }
 
 /* ปุ่มบันทึก */
 .button-wrapper {
   margin-top: 35px;
-  padding: 0 50px; /* เว้นระยะซ้ายขวาให้ปุ่มสั้นลงเหมือนในรูป */
+  padding: 0 50px;
 }
 
 .submit-btn {
