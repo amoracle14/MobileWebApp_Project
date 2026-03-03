@@ -9,14 +9,28 @@
     </ion-header>
 
     <ion-content class="ion-padding">
+
+      <div v-if="transactions.length === 0" class="ion-text-center">
+        ยังไม่มีรายการ
+      </div>
+
       <div v-for="item in transactions" :key="item.id">
         <ion-card class="transaction-card">
           <ion-card-header>
             <div class="card-header-row">
               <ion-card-title class="type-title">
-                {{ item.amount > 0 ? 'รายการรายรับ' : 'รายการรายจ่าย' }}
+                {{ 
+                  item.type === 'income' ? 'รายการรายรับ' :
+                  item.type === 'expense' ? 'รายการรายจ่าย' :
+                  'รายการหนี้สิน'
+                }}
               </ion-card-title>
-              <ion-button fill="clear" size="small" @click="editItem()" class="edit-btn">
+
+              <ion-button 
+                fill="clear" 
+                size="small" 
+                @click="editItem(item.id)" 
+                class="edit-btn">
                 <ion-icon slot="start" :icon="createOutline" />
                 แก้ไข
               </ion-button>
@@ -26,21 +40,27 @@
           <ion-card-content>
             <div class="info-row">
               <span class="label">หมวดหมู่</span>
-              <span class="value">{{ item.category }}</span>
+              <span class="value">{{ categoryMap[item.category] || item.category }}</span>
             </div>
+
             <div class="info-row">
               <span class="label">จำนวนเงิน</span>
-              <span :class="['value', 'amount', item.amount > 0 ? 'income' : 'expense']">
-                {{ item.amount > 0 ? '+' : '' }}{{ item.amount }}
+              <span :class="['value', 'amount',
+                item.type === 'income' ? 'income' : 'expense']">
+                {{ item.type === 'income' ? '+' : '-' }}{{ item.amount }}
               </span>
             </div>
+
             <div class="info-row">
               <span class="label">วันที่</span>
-              <span class="value">{{ item.date }}</span>
+              <span class="value">
+                {{ item.date ? new Date(item.date).toLocaleDateString() : '-' }}
+              </span>
             </div>
+
             <div class="info-row">
               <span class="label">รายละเอียด</span>
-              <span class="value">{{ item.description }}</span>
+              <span class="value">{{ item.note }}</span>
             </div>
 
             <div class="ion-text-right">
@@ -52,87 +72,84 @@
           </ion-card-content>
         </ion-card>
       </div>
-    </ion-content>
 
-    
+    </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router'; 
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import {
-  IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonCard, 
-  IonCardHeader, IonCardTitle, IonCardContent, IonButton, IonIcon, alertController
-} from '@ionic/vue';
-import { createOutline, trashOutline } from 'ionicons/icons';
+  IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
+  IonCard, IonCardHeader, IonCardTitle, IonCardContent,
+  IonButton, IonIcon, alertController,
+  onIonViewWillEnter
+} from '@ionic/vue'
+import { createOutline, trashOutline } from 'ionicons/icons'
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore'
+import { db } from '@/firebase'
 
-const router = useRouter();
+const router = useRouter()
+const transactions = ref<any[]>([])
 
-// จำลองข้อมูล (Mock Data)
-const transactions = ref([
-  { id: 1, category: 'อาหาร', amount: -300, date: '15 ม.ค. 2569', description: 'กินข้าวที่ร้านบลาๆๆ' },
-  { id: 2, category: 'เครื่องเขียน', amount: -550, date: '14 ม.ค. 2569', description: 'ซื้อสมุด ปากกา ดินสอ' },
-  { id: 3, category: 'การทำงานพิเศษ', amount: 1200, date: '10 ม.ค. 2569', description: 'พาร์ทไทม์แบบไม่พัก' },
-]);
+const categoryMap: Record<string, string> = {
+  food: 'ค่าอาหาร',
+  travel: 'ค่าเดินทาง',
+  personal: 'ของใช้ส่วนตัว',
+  parttime: 'ค่าจ้าง / งานพิเศษ',
+  shopping: 'ช้อปปิ้ง',
+  credit_card_debt: 'หนี้บัตรเครดิต'
+}
 
-// ฟังก์ชันลบรายการ
-const deleteItem = async (id: number) => {
+const fetchTransactions = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "transactions"))
+    transactions.value = querySnapshot.docs.map(docSnap => ({
+      id: docSnap.id,
+      ...docSnap.data()
+    }))
+  } catch (error) {
+    console.error("โหลดข้อมูลไม่สำเร็จ:", error)
+  }
+}
+
+const deleteItem = async (id: string) => {
   const alert = await alertController.create({
     header: 'ยืนยันการลบรายการ',
-    subHeader: 'รายการนี้จะถูกลบออกจากบัญชีของคุณถาวร',
     message: 'คุณแน่ใจใช่หรือไม่ที่จะลบข้อมูลนี้?',
-    cssClass: 'white-theme-alert', // เราสามารถนำชื่อคลาสนี้ไปแต่งต่อใน CSS ได้
     buttons: [
+      { text: 'ยกเลิก', role: 'cancel' },
       {
-        text: 'ยกเลิก',
-        role: 'cancel',
-        cssClass: 'alert-button-cancel', // แต่งสีปุ่มยกเลิก
-        handler: () => {
-          console.log('ยกเลิกการลบ');
-        },
-      },
-      {
-        text: 'ยืนยันการลบ',
+        text: 'ลบ',
         role: 'destructive',
-        cssClass: 'alert-button-confirm', // แต่งสีปุ่มลบให้เด่น
-        handler: () => {
-          transactions.value = transactions.value.filter(t => t.id !== id);
-        },
-      },
-    ],
-  });
+        handler: async () => {
+          await deleteDoc(doc(db, "transactions", id))
+          fetchTransactions()
+        }
+      }
+    ]
+  })
 
-  await alert.present();
-};
-const editItem = () => {
-  router.push('/add-transaction'); 
-};
+  await alert.present()
+}
+
+const editItem = (id: string) => {
+  router.push(`/add-transaction/${id}`)
+}
+
+/* 🔥 โหลดใหม่ทุกครั้งที่กลับเข้าหน้า */
+onIonViewWillEnter(() => {
+  fetchTransactions()
+})
 </script>
 
 <style scoped>
-/* พื้นหลัง Gradient ตามรูป */
 .header-gradient {
   --background: linear-gradient(to right, #8de4fb, #acc7f3);
   --color: #333;
-  
-}
-.ion-text-center{
-  font-weight: bold;
-  font-size: 1.1rem;
-  margin: 50px;
 }
 
-ion-content {
-  --background: #ffffff;
-}
-
-ion-title {
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-/* ปรับแต่ง Card */
 .transaction-card {
   margin-bottom: 16px;
   border-radius: 12px;
@@ -149,19 +166,11 @@ ion-title {
 .type-title {
   font-size: 1.1rem;
   font-weight: bold;
-  color: #000;
 }
 
-.edit-btn {
-  --color: #4a90e2;
-  font-size: 0.9rem;
-}
-
-/* จัดเลย์เอาต์ข้อมูลข้างใน */
 .info-row {
   display: flex;
   margin-bottom: 8px;
-  font-size: 1rem;
 }
 
 .label {
@@ -170,7 +179,6 @@ ion-title {
 }
 
 .value {
-  color: #333;
   margin-left: 8px;
 }
 
@@ -178,32 +186,15 @@ ion-title {
   font-weight: bold;
 }
 
-.expense {
-  color: #ff5252;
-}
-
 .income {
   color: #4cd137;
 }
 
-/* ปุ่มลบ */
+.expense {
+  color: #ff5252;
+}
+
 .delete-btn {
   --color: #ff5252;
-  font-size: 0.9rem;
-  margin-top: 8px;
 }
-
-/* Tab Bar */
-ion-tab-bar {
-  --border: 1px solid #f0f0f0;
-}
-
-.selected-tab {
-  --color: #4db8ff;
-}
-
-ion-tab-button ion-label {
-  font-size: 12px;
-}
-
 </style>

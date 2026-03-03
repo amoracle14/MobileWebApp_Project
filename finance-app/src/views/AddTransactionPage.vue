@@ -3,15 +3,18 @@
     <ion-header class="ion-no-border">
       <ion-toolbar class="header-toolbar">
         <ion-buttons slot="start">
-          <ion-back-button default-href="#" text=""></ion-back-button>
+          <ion-back-button default-href="/tabs/transactions" text=""></ion-back-button>
         </ion-buttons>
-        <ion-title>บัญชีรายรับ - รายจ่าย หนี้สิน</ion-title>
+        <ion-title>
+          {{ transactionId ? 'แก้ไขรายการ' : 'เพิ่มรายการ' }}
+        </ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content class="main-content">
       <div class="form-container">
-        
+
+        <!-- ประเภทรายการ -->
         <ion-segment v-model="selectedType" mode="md" class="custom-segment">
           <ion-segment-button value="income">
             <ion-label>รายรับ</ion-label>
@@ -23,35 +26,50 @@
             <ion-label>หนี้สิน</ion-label>
           </ion-segment-button>
         </ion-segment>
-        
 
+        <!-- หมวดหมู่ -->
         <div class="field-group">
           <div class="field-label">หมวดหมู่</div>
           <ion-item lines="none" class="custom-input">
-            <ion-select placeholder="เลือกหมวดหมู่" interface="popover">
-              <ion-select-option value="food">อาหาร</ion-select-option>
-              <ion-select-option value="travel">เดินทาง</ion-select-option>
+            <ion-select v-model="category" placeholder="เลือกหมวดหมู่" interface="popover">
+              <ion-select-option value="food">ค่าอาหาร</ion-select-option>
+              <ion-select-option value="travel">ค่าเดินทาง</ion-select-option>
+              <ion-select-option value="personal">ของใช้ส่วนตัว</ion-select-option>
+              <ion-select-option value="parttime">ค่าจ้าง / งานพิเศษ</ion-select-option>
+              <ion-select-option value="shopping">ช้อปปิ้ง</ion-select-option>
+              <ion-select-option value="credit_card_debt">หนี้บัตรเครดิต</ion-select-option>
             </ion-select>
           </ion-item>
         </div>
 
+        <!-- จำนวนเงิน -->
         <div class="field-group">
           <div class="field-label flex-label">
             <span>จำนวนเงิน</span>
             <span class="unit-text">บาท</span>
           </div>
           <ion-item lines="none" class="custom-input">
-            <ion-input type="number" placeholder="เช่น 120"></ion-input>
+            <ion-input
+              type="number"
+              placeholder="เช่น 120"
+              v-model="amount">
+            </ion-input>
           </ion-item>
         </div>
 
+        <!-- รายละเอียด -->
         <div class="field-group">
           <div class="field-label">รายละเอียด</div>
           <ion-item lines="none" class="custom-input">
-            <ion-textarea placeholder="หมายเหตุ (ถ้ามี)" :rows="4"></ion-textarea>
+            <ion-textarea
+              placeholder="หมายเหตุ (ถ้ามี)"
+              :rows="4"
+              v-model="note">
+            </ion-textarea>
           </ion-item>
         </div>
 
+        <!-- วันที่ -->
         <div class="field-group">
           <div class="date-input-wrapper">
             <input type="date" v-model="selectedDate" class="date-input" />
@@ -59,9 +77,10 @@
           </div>
         </div>
 
+        <!-- ปุ่มบันทึก -->
         <div class="button-wrapper">
-          <ion-button expand="block" class="submit-btn">
-            บันทึกรายการ
+          <ion-button expand="block" class="submit-btn" @click="saveTransaction">
+            {{ transactionId ? 'อัปเดตรายการ' : 'บันทึกรายการ' }}
           </ion-button>
         </div>
 
@@ -74,19 +93,85 @@
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
   IonButtons, IonBackButton, IonSegment, IonSegmentButton,
-  IonLabel, IonItem, IonSelect, IonSelectOption, IonInput,
-  IonTextarea, IonButton, IonIcon
-} from '@ionic/vue';
-import { calendarOutline } from 'ionicons/icons';
-import { addIcons } from 'ionicons';
+  IonLabel, IonItem, IonSelect, IonSelectOption,
+  IonInput, IonTextarea, IonButton, IonIcon
+} from '@ionic/vue'
+
+import { calendarOutline } from 'ionicons/icons'
+import { addIcons } from 'ionicons'
 import { ref } from 'vue'
+import { onIonViewWillEnter } from '@ionic/vue'
+
+import { collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore'
+import { db } from '@/firebase'
+import { useRoute, useRouter } from 'vue-router'
+
+addIcons({ 'calendar-outline': calendarOutline })
+
+const route = useRoute()
+const router = useRouter()
+
+const transactionId = route.params.id as string | undefined
 
 const selectedType = ref('income')
+const category = ref('')
+const amount = ref('')
+const note = ref('')
 const selectedDate = ref('')
 
-addIcons({
-  'calendar-outline': calendarOutline
-});
+/* โหลดข้อมูลทุกครั้งที่เข้าหน้า */
+onIonViewWillEnter(async () => {
+  if (transactionId) {
+    const docRef = doc(db, 'transactions', transactionId)
+    const docSnap = await getDoc(docRef)
+
+    if (docSnap.exists()) {
+      const data = docSnap.data()
+      selectedType.value = data.type
+      category.value = data.category
+      amount.value = data.amount
+      note.value = data.note
+      selectedDate.value = data.date
+    }
+  } else {
+    // เคลียร์ฟอร์มถ้าเป็นโหมดเพิ่ม
+    selectedType.value = 'income'
+    category.value = ''
+    amount.value = ''
+    note.value = ''
+    selectedDate.value = ''
+  }
+})
+
+/* บันทึก / อัปเดต */
+const saveTransaction = async () => {
+  try {
+    if (!category.value || !amount.value) {
+      alert('กรุณากรอกข้อมูลให้ครบ')
+      return
+    }
+
+    const payload = {
+      type: selectedType.value,
+      category: category.value,
+      amount: Number(amount.value),
+      note: note.value,
+      date: selectedDate.value
+    }
+
+    if (transactionId) {
+      await updateDoc(doc(db, 'transactions', transactionId), payload)
+    } else {
+      await addDoc(collection(db, 'transactions'), payload)
+    }
+
+    // 🔥 เด้งกลับแบบไม่ย้อนหน้าเดิม
+    router.replace('/tabs/transactions')
+
+  } catch (error) {
+    console.error(error)
+  }
+}
 </script>
 
 <style scoped>

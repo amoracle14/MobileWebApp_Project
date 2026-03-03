@@ -39,16 +39,16 @@ const routes: Array<RouteRecordRaw> = [
       },
       {
         path: 'ai-analysis',
-        component: () => import('../views/AiAnalysisPage.vue') 
+        component: () => import('../views/AiAnalysisPage.vue')
       },
       {
         path: 'summary-analyst',
-        component: () => import('../views/SummaryAnalystPage.vue') 
+        component: () => import('../views/SummaryAnalystPage.vue')
       }
     ]
   },
 
-  // ---------- Quiz (อยู่นอก Tabs) ----------
+  // ---------- Quiz ----------
   {
     path: '/quiz/:page(\\d+)',
     component: () => import('@/views/QuizPage.vue')
@@ -59,9 +59,9 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/ResultPage.vue')
   },
 
-  // ---------- Add Transaction ----------
+  // ---------- Add / Edit Transaction (ตัวเดียวจบ) ----------
   {
-    path: '/add-transaction', 
+    path: '/add-transaction/:id?',
     component: () => import('../views/AddTransactionPage.vue')
   }
 ]
