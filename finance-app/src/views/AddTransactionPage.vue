@@ -319,3 +319,149 @@ ion-select::part(icon) {
   height: 48px;
 }
 </style>
+
+<style scoped>
+/* พื้นหลังของหน้าจอ */
+.main-content {
+  --background: #f4f4f4;
+}
+
+/* ส่วนหัวไล่เฉดสี */
+.header-toolbar {
+  --background: linear-gradient(to right, #8de8f3, #b8daff);
+  --color: #333;
+  --border-width: 0;
+  text-align: center;
+}
+
+ion-title {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Container หุ้มฟอร์ม */
+.form-container {
+  padding: 20px;
+}
+
+/* ปรับแต่ง Segment (รายรับ/รายจ่าย/หนี้สิน) */
+.custom-segment {
+  --background: transparent;
+  background: transparent;
+  margin-bottom: 25px;
+}
+
+ion-segment-button {
+  --background: #ffffff;
+  --background-checked: #77d9e8;
+  --color: #333;
+  --color-checked: #ffffff;
+  --border-radius: 10px;
+  --indicator-height: 0;
+  --indicator-color: transparent;
+  min-height: 45px;
+  border: 1.5px solid #77d9e8;
+  margin: 0 5px;
+  font-weight: 500;
+}
+
+ion-segment-button::part(indicator),
+ion-segment-button::part(indicator-background) {
+  display: none;
+}
+
+/* จัดการ Label */
+.field-group {
+  margin-bottom: 20px;
+}
+
+.field-label {
+  font-size: 15px;
+  color: #444;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.flex-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.unit-text {
+  font-size: 14px;
+  color: #666;
+}
+
+/* ปรับแต่ง Input Box */
+.custom-input {
+  --background: #ffffff;
+  background: #ffffff;
+  border: 1px solid #eeeeee;
+  border-radius: 10px;
+  --padding-start: 12px;
+  --border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+ion-select {
+  width: 100%;
+}
+
+ion-select::part(icon) {
+  position: absolute;
+  right: 12px;
+}
+
+/* Date Input */
+.date-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.date-input {
+  width: 100%;
+  padding: 14px 12px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 15px;
+  color: #333;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.calendar-icon {
+  position: absolute;
+  right: 12px;
+  color: #333;
+  font-size: 24px;
+  pointer-events: none;
+}
+
+/* ปุ่มบันทึก */
+.button-wrapper {
+  margin-top: 35px;
+  padding: 0 50px;
+}
+
+.submit-btn {
+  --background: #77d9e8;
+  --background-activated: #66c8d7;
+  --border-radius: 10px;
+  --box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  font-size: 16px;
+  font-weight: bold;
+  height: 48px;
+}
+</style>
