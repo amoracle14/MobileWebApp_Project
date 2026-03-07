@@ -117,7 +117,7 @@ const goBack = () => {
     position: absolute;
     top: 10px;
     left: 5px;
-    z-index: 100; /* ดันให้อยู่บนสุด กดติดแน่นอน */
+    z-index: 100;
     --padding-start: 10px;
 }
 
