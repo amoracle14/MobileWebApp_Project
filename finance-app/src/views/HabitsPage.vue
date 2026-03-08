@@ -108,7 +108,7 @@
             <div class="bar-chart-container" :style="{ minHeight: '180px', height: Math.max(180, categoryStats.length * 40) + 'px' }">
                 <Bar :key="'bar-' + periodFilter" v-if="categoryStats.length > 0" :data="categoryChartData" :options="categoryChartOptions" />
                 <div v-else class="text-center text-muted" style="padding-top: 50px;">
-                  ไม่มีรายการใช้จ่ายในช่วงเวลานี้
+                 ไม่มีรายการใช้จ่ายในช่วงเวลานี้
                 </div>
             </div>
             <p v-if="categoryStats.length > 0" class="chart-note">หมวด "{{ topExpenseCategory }}" มีสัดส่วนสูงสุด</p>
@@ -129,16 +129,26 @@
               <div class="ai-text-content">
                 <div class="ai-header">
                   <div class="ai-label">บทวิเคราะห์พฤติกรรม (AI)</div>
-                  <div class="ai-tag" v-if="!isAILoading">{{ aiSummary.tag }}</div>
-                  <div class="ai-tag-loading" v-else>
+                  <div class="ai-tag" v-if="hasTriggeredAI && !isAILoading">{{ aiSummary.tag }}</div>
+                  <div class="ai-tag-loading" v-else-if="isAILoading">
                      <ion-spinner name="dots" color="light" style="width: 20px; height: 10px;"></ion-spinner>
                   </div>
                 </div>
                 
-                <p class="ai-message">
-                  <span v-if="isAILoading" style="color: #b2bec3;">"ระบบกำลังวิเคราะห์ข้อมูลการใช้จ่ายและหนี้สิน โปรดรอสักครู่..."</span>
-                  <span v-else>"{{ aiSummary.message }}"</span>
-                </p>
+                <div v-if="!hasTriggeredAI" class="trigger-ai-container">
+                  <p class="ai-prompt-text">ให้ AI สรุปสถานะการเงินช่วงเวลานี้แบบด่วนๆ มั้ย?</p>
+                  <ion-button size="small" shape="round" class="trigger-ai-btn" @click="generateDashboardAI">
+                    <ion-icon :icon="sparkles" slot="start"></ion-icon>
+                    วิเคราะห์
+                  </ion-button>
+                </div>
+
+                <div v-else>
+                  <p class="ai-message">
+                    <span v-if="isAILoading" style="color: #b2bec3;">"กำลังสรุปข้อมูลกระแสเงินสดของคุณ..."</span>
+                    <span v-else>"{{ aiSummary.message }}"</span>
+                  </p>
+                </div>
 
                 <div class="see-more" @click="goToAIAnalysis">
                   อ่านบทวิเคราะห์ละเอียด <ion-icon :icon="arrowForward" size="small"></ion-icon>
@@ -161,7 +171,7 @@ import {
 } from '@ionic/vue';
 import { 
   chevronDown, arrowDown, arrowUp, wallet, 
-  arrowForward, statsChart, warningOutline 
+  arrowForward, statsChart, warningOutline, sparkles 
 } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import { 
@@ -180,24 +190,25 @@ const financeStore = useFinanceStore();
 
 const periodFilter = ref('เดือนนี้'); 
 
-const isAILoading = ref(true);
+// 🔥 เพิ่มตัวแปรเช็คว่ากดปุ่มวิเคราะห์หรือยัง
+const hasTriggeredAI = ref(false);
+const isAILoading = ref(false);
 const aiSummary = ref({
-  tag: 'กำลังวิเคราะห์',
-  message: 'ระบบกำลังประมวลผล...'
+  tag: '-',
+  message: '-'
 });
 
 onMounted(async () => {
   if (financeStore.transactions.length === 0) {
     await financeStore.fetchTransactions();
   }
-  await generateDashboardAI();
 });
 
-watch(periodFilter, async () => {
-  await generateDashboardAI();
+watch(periodFilter, () => {
+  // 🔥 ถ้ายูสเซอร์เปลี่ยนเดือน ให้ซ่อนผลลัพธ์เก่าแล้วโชว์ปุ่มใหม่
+  hasTriggeredAI.value = false;
 });
 
-// คำนวณยอดเงินรวมสุทธิแบบรวมหนี้ด้วย
 const totalWalletBalance = computed(() => {
   const allTxs = financeStore.transactions;
   const tIncome = allTxs.filter((t: any) => t.type === 'income').reduce((sum: number, t: any) => sum + Number(t.amount), 0);
@@ -251,12 +262,10 @@ const debt = computed(() => {
     .reduce((sum: number, t: any) => sum + Number(t.amount), 0);
 });
 
-// เอาหนี้มาหักลบยอดคงเหลือด้วย
 const balance = computed(() => income.value - expense.value - debt.value);
 
 const expensePercent = computed(() => {
   if (income.value === 0) return 0; 
-  // คิดสัดส่วนจากรายจ่าย + หนี้ เทียบกับรายรับ
   const percent = ((expense.value + debt.value) / income.value) * 100;
   return percent > 100 ? 100 : Math.round(percent); 
 });
@@ -280,7 +289,6 @@ const doughnutOptions = {
   plugins: { legend: { display: false }, tooltip: { enabled: false } } 
 };
 
-// --- ตัวแปลภาษา ---
 const categoryMap: Record<string, string> = {
   'food': 'ค่าอาหาร',
   'travel': 'ค่าเดินทาง',
@@ -293,7 +301,6 @@ const categoryMap: Record<string, string> = {
 };
 
 const categoryStats = computed(() => {
-  // ดึงทั้ง expense และ debt มาแสดงในกราฟแท่ง
   const outflows = filteredTransactions.value.filter((t: any) => t.type === 'expense' || t.type === 'debt');
   const grouped = outflows.reduce((acc: Record<string, number>, curr: any) => {
     const rawCat = String(curr.category || 'ไม่ระบุหมวดหมู่');
@@ -353,32 +360,20 @@ const openPeriodSelector = async () => {
 };
 
 const generateDashboardAI = async () => {
+  hasTriggeredAI.value = true;
   isAILoading.value = true;
   try {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (!apiKey) throw new Error('ไม่พบ API Key');
 
-    const incomeVal = income.value;
-    const expenseVal = expense.value;
-    const debtVal = debt.value; // ดึงยอดหนี้มาส่งให้ AI ด้วย
-    const balanceVal = balance.value;
-    
-    const outflows = filteredTransactions.value.filter((t: any) => t.type === 'expense' || t.type === 'debt');
-    const grouped = outflows.reduce((acc: any, curr: any) => {
-        const rawCat = String(curr.category || 'อื่นๆ');
-        const displayCat = categoryMap[rawCat.toLowerCase().trim()] || rawCat;
-        acc[displayCat] = (acc[displayCat] || 0) + Number(curr.amount);
-        return acc;
-    }, {});
-
     const promptText = `
-คุณคือที่ปรึกษาทางการเงินระดับมืออาชีพ ช่วยวิเคราะห์ข้อมูลในช่วงเวลา "${periodFilter.value}" นี้แบบสั้นๆ เพื่อนำไปแสดงในรายงานทางการเงิน:
-รายรับ: ${incomeVal}, รายจ่าย: ${expenseVal}, หนี้สิน: ${debtVal}, คงเหลือ: ${balanceVal}, สัดส่วนเงินออก: ${JSON.stringify(grouped)}
+คุณคือที่ปรึกษาทางการเงิน ช่วยสรุปภาพรวมทางการเงินช่วง "${periodFilter.value}" นี้แบบสั้นมากๆ เพียง 1 ประโยค:
+รายรับ: ${income.value}, รายจ่าย: ${expense.value}, หนี้สิน: ${debt.value}, คงเหลือ: ${balance.value}
 
-ตอบกลับเป็น JSON เท่านั้น (ไม่ต้องมี markdown) โครงสร้างดังนี้:
+ตอบเป็น JSON เท่านั้น โครงสร้าง:
 {
-  "tag": "ระบุชื่อกลุ่มพฤติกรรมสั้นๆ 1-2 คำ แบบทางการ (เช่น จัดการหนี้สิน, เฝ้าระวังรายจ่าย, วางแผนลงทุน)",
-  "message": "สรุปคำแนะนำเชิงวิชาการสั้นๆ 1-2 ประโยค แบบทางการและเป็นเหตุเป็นผล"
+  "tag": "สถานะ 1-2 คำ (เช่น การเงินมั่นคง, ระวังหนี้สิน)",
+  "message": "ประโยคสรุปความยาวไม่เกิน 1 บรรทัด"
 }`;
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`, {
@@ -397,8 +392,8 @@ const generateDashboardAI = async () => {
   } catch (error) {
     console.error("Dashboard AI Error:", error);
     aiSummary.value = {
-      tag: 'ข้อมูลไม่เพียงพอ',
-      message: 'อาจเป็นเพราะยอดเคลื่อนไหวทางการเงินมีน้อยเกินไป หรือเกิดปัญหาขัดข้องจากระบบปัญญาประดิษฐ์'
+      tag: 'เกิดข้อผิดพลาด',
+      message: 'เชื่อมต่อ AI ไม่สำเร็จ ลองใหม่อีกครั้ง'
     };
   } finally {
     isAILoading.value = false;
@@ -481,8 +476,13 @@ const goToSummary = () => {
 
 /* AI Card */
 .persona-card {
-  background: #ffffff; border-radius: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  border: none; margin-top: 25px; overflow: visible; 
+  background: #ffffff; 
+  border-radius: 24px; 
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: none; 
+  margin-top: 25px; 
+  margin-inline: 0;
+  overflow: visible; 
 }
 .persona-content { padding: 20px; }
 .persona-layout { display: flex; gap: 15px; align-items: flex-start; }
@@ -498,6 +498,10 @@ const goToSummary = () => {
 .ai-tag { background: #ffeaa7; color: #d35400; font-size: 0.7rem; font-weight: bold; padding: 2px 8px; border-radius: 8px; }
 .ai-tag-loading { background: #b2bec3; padding: 2px 8px; border-radius: 8px; display: flex; align-items: center;}
 
+.trigger-ai-container { text-align: center; margin: 10px 0; }
+.ai-prompt-text { font-size: 0.85rem; color: #636e72; margin-bottom: 10px; }
+.trigger-ai-btn { --background: linear-gradient(90deg, #74d7e9 0%, #b2cff4 100%); --color: #2d3436; font-weight: bold; font-size: 0.85rem; }
+
 .ai-message { font-size: 0.9rem; color: #2d3436; line-height: 1.5; margin: 0 0 12px 0; font-weight: 500; }
-.see-more { color: #0984e3; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; cursor: pointer; opacity: 0.9; }
+.see-more { color: #0984e3; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; cursor: pointer; opacity: 0.9; margin-top: 10px;}
 </style>
