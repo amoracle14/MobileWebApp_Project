@@ -14,7 +14,6 @@
     <ion-content class="main-content">
       <div class="form-container">
 
-        <!-- ประเภทรายการ -->
         <ion-segment v-model="selectedType" mode="md" class="custom-segment">
           <ion-segment-button value="income">
             <ion-label>รายรับ</ion-label>
@@ -27,7 +26,6 @@
           </ion-segment-button>
         </ion-segment>
 
-        <!-- หมวดหมู่ -->
         <div class="field-group">
           <div class="field-label">หมวดหมู่</div>
           <ion-item lines="none" class="custom-input">
@@ -42,7 +40,6 @@
           </ion-item>
         </div>
 
-        <!-- จำนวนเงิน -->
         <div class="field-group">
           <div class="field-label flex-label">
             <span>จำนวนเงิน</span>
@@ -57,7 +54,6 @@
           </ion-item>
         </div>
 
-        <!-- รายละเอียด -->
         <div class="field-group">
           <div class="field-label">รายละเอียด</div>
           <ion-item lines="none" class="custom-input">
@@ -69,7 +65,6 @@
           </ion-item>
         </div>
 
-        <!-- วันที่ -->
         <div class="field-group">
           <div class="date-input-wrapper">
             <input type="date" v-model="selectedDate" class="date-input" />
@@ -77,7 +72,6 @@
           </div>
         </div>
 
-        <!-- ปุ่มบันทึก -->
         <div class="button-wrapper">
           <ion-button expand="block" class="submit-btn" @click="saveTransaction">
             {{ transactionId ? 'อัปเดตรายการ' : 'บันทึกรายการ' }}
@@ -103,9 +97,9 @@ import { ref } from 'vue'
 import { onIonViewWillEnter } from '@ionic/vue'
 
 import { collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore'
-// 🔥 เพิ่ม getAuth เข้ามาเพื่อดึงข้อมูลคนล็อคอิน
 import { getAuth } from 'firebase/auth' 
 import { db } from '@/firebase'
+import { auth } from '@/firebase' 
 import { useRoute, useRouter } from 'vue-router'
 
 addIcons({ 'calendar-outline': calendarOutline })
@@ -153,7 +147,7 @@ const saveTransaction = async () => {
       return
     }
 
-    // 🔥 1. เรียกดูว่าใครกำลังล็อคอินอยู่
+    // 1. เรียกดูว่าใครกำลังล็อคอินอยู่
     const auth = getAuth()
     const user = auth.currentUser
 
@@ -162,14 +156,14 @@ const saveTransaction = async () => {
       return
     }
 
-    // 🔥 2. เพิ่มฟิลด์ userId เข้าไปในข้อมูลที่จะส่งขึ้น Database
+    // 2. ปั้นข้อมูลและยัด userId ใส่เข้าไปด้วย
     const payload = {
       type: selectedType.value,
       category: category.value,
       amount: Number(amount.value),
       note: note.value,
       date: selectedDate.value,
-      userId: user.uid // <--- จุดสำคัญ! แปะป้ายชื่อเจ้าของเงินไว้ตรงนี้
+      userId: user.uid 
     }
 
     if (transactionId) {
@@ -188,152 +182,6 @@ const saveTransaction = async () => {
   }
 }
 </script>
-
-<style scoped>
-/* พื้นหลังของหน้าจอ */
-.main-content {
-  --background: #f4f4f4;
-}
-
-/* ส่วนหัวไล่เฉดสี */
-.header-toolbar {
-  --background: linear-gradient(to right, #8de8f3, #b8daff);
-  --color: #333;
-  --border-width: 0;
-  text-align: center;
-}
-
-ion-title {
-  font-size: 16px;
-  font-weight: bold;
-}
-
-/* Container หุ้มฟอร์ม */
-.form-container {
-  padding: 20px;
-}
-
-/* ปรับแต่ง Segment (รายรับ/รายจ่าย/หนี้สิน) */
-.custom-segment {
-  --background: transparent;
-  background: transparent;
-  margin-bottom: 25px;
-}
-
-ion-segment-button {
-  --background: #ffffff;
-  --background-checked: #77d9e8;
-  --color: #333;
-  --color-checked: #ffffff;
-  --border-radius: 10px;
-  --indicator-height: 0;
-  --indicator-color: transparent;
-  min-height: 45px;
-  border: 1.5px solid #77d9e8;
-  margin: 0 5px;
-  font-weight: 500;
-}
-
-ion-segment-button::part(indicator),
-ion-segment-button::part(indicator-background) {
-  display: none;
-}
-
-/* จัดการ Label */
-.field-group {
-  margin-bottom: 20px;
-}
-
-.field-label {
-  font-size: 15px;
-  color: #444;
-  margin-bottom: 8px;
-  font-weight: 500;
-}
-
-.flex-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.unit-text {
-  font-size: 14px;
-  color: #666;
-}
-
-/* ปรับแต่ง Input Box */
-.custom-input {
-  --background: #ffffff;
-  background: #ffffff;
-  border: 1px solid #eeeeee;
-  border-radius: 10px;
-  --padding-start: 12px;
-  --border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-}
-
-ion-select {
-  width: 100%;
-}
-
-ion-select::part(icon) {
-  position: absolute;
-  right: 12px;
-}
-
-/* Date Input */
-.date-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.date-input {
-  width: 100%;
-  padding: 14px 12px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  background: #ffffff;
-  font-size: 15px;
-  color: #333;
-  appearance: none;
-  -webkit-appearance: none;
-}
-
-.date-input::-webkit-calendar-picker-indicator {
-  opacity: 0;
-  position: absolute;
-  right: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-}
-
-.calendar-icon {
-  position: absolute;
-  right: 12px;
-  color: #333;
-  font-size: 24px;
-  pointer-events: none;
-}
-
-/* ปุ่มบันทึก */
-.button-wrapper {
-  margin-top: 35px;
-  padding: 0 50px;
-}
-
-.submit-btn {
-  --background: #77d9e8;
-  --background-activated: #66c8d7;
-  --border-radius: 10px;
-  --box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  font-size: 16px;
-  font-weight: bold;
-  height: 48px;
-}
-</style>
 
 <style scoped>
 /* พื้นหลังของหน้าจอ */
