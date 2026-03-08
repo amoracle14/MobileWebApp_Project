@@ -1,20 +1,48 @@
 <template>
   <ion-page>
-    <ion-content class="ion-padding">
+    <ion-content class="register-bg">
 
-      <h2>Register</h2>
+      <div class="register-container">
 
-      <ion-input v-model="email" placeholder="Email"></ion-input>
+        <div class="register-card">
 
-      <ion-input v-model="password" type="password" placeholder="Password"></ion-input>
+          <h2>สมัครสมาชิก</h2>
 
-      <ion-button expand="full" @click="register">
-        สมัครสมาชิก
-      </ion-button>
+          <ion-input
+            class="input-box"
+            v-model="email"
+            type="email"
+            placeholder="Email">
+          </ion-input>
 
-      <ion-button fill="clear" router-link="/login">
-        กลับไป Login
-      </ion-button>
+          <ion-input
+            class="input-box"
+            v-model="password"
+            type="password"
+            placeholder="Password">
+          </ion-input>
+
+          <ion-button
+            expand="block"
+            class="register-btn"
+            @click="register">
+            สมัครสมาชิก
+          </ion-button>
+
+          <div class="divider">
+            <span>OR</span>
+          </div>
+
+          <ion-button
+            fill="clear"
+            router-link="/login"
+            class="back-login">
+            กลับไป ล็อคอิน
+          </ion-button>
+
+        </div>
+
+      </div>
 
     </ion-content>
   </ion-page>
@@ -62,3 +90,72 @@ const register = async () => {
 }
 
 </script>
+
+<style scoped>
+
+.register-bg{
+  --background: linear-gradient(
+    160deg,
+    #66c7d1,
+    #8fa9d8
+  );
+}
+
+.register-container{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100%;
+}
+
+.register-card{
+  width:90%;
+  max-width:360px;
+  background:white;
+  padding:30px 25px;
+  border-radius:22px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.12);
+  text-align:center;
+}
+
+.register-card h2{
+  color:#2c3e50;
+  margin-bottom:25px;
+  font-weight:600;
+}
+
+.input-box{
+  margin-bottom:16px;
+  --background:#f1f4f7;
+  border-radius:12px;
+
+  --padding-start:16px;   /* padding ซ้าย */
+  --padding-end:16px;
+
+  text-align:left;
+  --color:#333;
+}
+
+ion-input::part(native){
+  text-align:left;
+}
+
+.register-btn{
+  margin-top:10px;
+  --border-radius:14px;
+  font-weight:600;
+  letter-spacing:0.5px;
+}
+
+.divider{
+  margin:18px 0 8px 0;
+  color:#9aa0a6;
+  font-size:14px;
+}
+
+.back-login{
+  color:#4a7bd0;
+  font-weight:500;
+}
+
+</style>
