@@ -3,9 +3,22 @@ import { RouteRecordRaw } from 'vue-router'
 import TabsPage from '../views/TabsPage.vue'
 
 const routes: Array<RouteRecordRaw> = [
+
+  // ---------- Start ----------
   {
     path: '/',
-    redirect: '/tabs/home'
+    redirect: '/login'
+  },
+
+  // ---------- Login ----------
+  {
+    path: "/login",
+    component: () => import("../views/LoginPage.vue")
+  },
+
+  {
+    path: "/register",
+    component: () => import("../views/RegisterPage.vue")
   },
 
   // ---------- Tabs ----------
@@ -59,11 +72,12 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/ResultPage.vue')
   },
 
-  // ---------- Add / Edit Transaction (ตัวเดียวจบ) ----------
+  // ---------- Add Transaction ----------
   {
     path: '/add-transaction/:id?',
     component: () => import('../views/AddTransactionPage.vue')
   }
+
 ]
 
 const router = createRouter({
