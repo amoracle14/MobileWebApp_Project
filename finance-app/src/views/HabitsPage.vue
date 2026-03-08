@@ -11,12 +11,12 @@
                   <img src="/gojo.jpg" alt="Profile" />
                 </ion-avatar>
                 <div class="wallet-balance">
-                  <h2>฿ 400,000</h2>
+                  <h2>฿ {{ totalWalletBalance.toLocaleString() }}</h2>
                   <p>ยอดเงินคงเหลือสุทธิ</p>
                 </div>
               </div>
-              <ion-button shape="round" color="light" fill="solid" size="small" class="period-btn">
-                รายเดือน <ion-icon :icon="chevronDown" slot="end"></ion-icon>
+              <ion-button shape="round" color="light" fill="solid" size="small" class="period-btn" @click="openPeriodSelector">
+                {{ periodFilter }} <ion-icon :icon="chevronDown" slot="end"></ion-icon>
               </ion-button>
             </div>
         </div>
@@ -35,10 +35,10 @@
                 <ion-row class="ion-align-items-center">
                     <ion-col size="6" class="chart-col">
                     <div class="donut-wrapper">
-                        <Doughnut :data="doughnutData" :options="doughnutOptions" />
+                        <Doughnut :key="'donut-' + periodFilter" :data="doughnutData" :options="doughnutOptions" />
                         <div class="chart-center-text">
                         <div class="label">ใช้ไป</div>
-                        <div class="value">68%</div>
+                        <div class="value">{{ expensePercent }}%</div>
                         </div>
                     </div>
                     </ion-col>
@@ -46,11 +46,15 @@
                     <div class="stats-text">
                         <div class="stat-item">
                         <span class="dot income"></span> <span class="label">รายรับ</span>
-                        <div class="value-text">1.25M</div>
+                        <div class="value-text">{{ income.toLocaleString() }}</div>
                         </div>
                         <div class="stat-item">
                         <span class="dot expense"></span> <span class="label">รายจ่าย</span>
-                        <div class="value-text">850k</div>
+                        <div class="value-text">{{ expense.toLocaleString() }}</div>
+                        </div>
+                        <div class="stat-item">
+                        <span class="dot debt"></span> <span class="label">หนี้สิน</span>
+                        <div class="value-text" style="color: #e67e22;">{{ debt.toLocaleString() }}</div>
                         </div>
                     </div>
                     </ion-col>
@@ -62,42 +66,52 @@
 
         <ion-grid class="ion-no-padding ion-margin-bottom">
             <ion-row>
-            <ion-col size="4">
+            <ion-col size="6">
                 <ion-card class="mini-stat-card income-bg">
                 <ion-icon :icon="arrowDown" class="icon-down"></ion-icon>
                 <div class="label">รายรับ</div>
-                <div class="val">1.25M</div>
+                <div class="val">{{ income.toLocaleString() }}</div>
                 </ion-card>
             </ion-col>
-            <ion-col size="4">
+            <ion-col size="6">
                 <ion-card class="mini-stat-card expense-bg">
                 <ion-icon :icon="arrowUp" class="icon-up"></ion-icon>
                 <div class="label">รายจ่าย</div>
-                <div class="val">850k</div>
+                <div class="val">{{ expense.toLocaleString() }}</div>
                 </ion-card>
             </ion-col>
-            <ion-col size="4">
+            <ion-col size="6">
+                <ion-card class="mini-stat-card debt-bg">
+                <ion-icon :icon="warningOutline" class="icon-debt"></ion-icon>
+                <div class="label">หนี้สิน</div>
+                <div class="val">{{ debt.toLocaleString() }}</div>
+                </ion-card>
+            </ion-col>
+            <ion-col size="6">
                 <ion-card class="mini-stat-card balance-bg">
                 <ion-icon :icon="wallet" class="icon-wallet"></ion-icon>
                 <div class="label">คงเหลือ</div>
-                <div class="val">400k</div>
+                <div class="val">{{ balance.toLocaleString() }}</div>
                 </ion-card>
             </ion-col>
             </ion-row>
         </ion-grid>
 
         <div class="section-header">
-            <h3>สัดส่วนค่าใช้จ่าย</h3>
+            <h3>สัดส่วนค่าใช้จ่าย & หนี้สิน</h3>
             <ion-button size="small" fill="clear" @click="goToSummary" class="view-report-btn">
              รายงานฉบับเต็ม <ion-icon :icon="statsChart" slot="end"></ion-icon>
             </ion-button>
         </div>
         <ion-card class="categories-card">
             <ion-card-content>
-            <div class="bar-chart-container">
-                <Bar :data="categoryChartData" :options="categoryChartOptions" />
+            <div class="bar-chart-container" :style="{ minHeight: '180px', height: Math.max(180, categoryStats.length * 40) + 'px' }">
+                <Bar :key="'bar-' + periodFilter" v-if="categoryStats.length > 0" :data="categoryChartData" :options="categoryChartOptions" />
+                <div v-else class="text-center text-muted" style="padding-top: 50px;">
+                  ไม่มีรายการใช้จ่ายในช่วงเวลานี้
+                </div>
             </div>
-            <p class="chart-note">หมวด "อาหารและเครื่องดื่ม" มีสัดส่วนรายจ่ายสูงสุด</p>
+            <p v-if="categoryStats.length > 0" class="chart-note">หมวด "{{ topExpenseCategory }}" มีสัดส่วนสูงสุด</p>
             </ion-card-content>
         </ion-card>
 
@@ -115,11 +129,15 @@
               <div class="ai-text-content">
                 <div class="ai-header">
                   <div class="ai-label">บทวิเคราะห์พฤติกรรม (AI)</div>
-                  <div class="ai-tag">The Foodie</div>
+                  <div class="ai-tag" v-if="!isAILoading">{{ aiSummary.tag }}</div>
+                  <div class="ai-tag-loading" v-else>
+                     <ion-spinner name="dots" color="light" style="width: 20px; height: 10px;"></ion-spinner>
+                  </div>
                 </div>
                 
                 <p class="ai-message">
-                  "ตรวจพบรายจ่ายในหมวดอาหารสูงกว่าเกณฑ์ปกติในระยะนี้ แนะนำให้ควบคุมงบประมาณเพื่อรักษาสภาพคล่องและบรรลุเป้าหมายทางการเงินที่ตั้งไว้"
+                  <span v-if="isAILoading" style="color: #b2bec3;">"ระบบกำลังวิเคราะห์ข้อมูลการใช้จ่ายและหนี้สิน โปรดรอสักครู่..."</span>
+                  <span v-else>"{{ aiSummary.message }}"</span>
                 </p>
 
                 <div class="see-more" @click="goToAIAnalysis">
@@ -139,11 +157,11 @@
 import { 
   IonPage, IonContent, 
   IonCard, IonCardContent, IonAvatar, IonButton, 
-  IonIcon, IonGrid, IonRow, IonCol
+  IonIcon, IonGrid, IonRow, IonCol, IonSpinner, actionSheetController
 } from '@ionic/vue';
 import { 
   chevronDown, arrowDown, arrowUp, wallet, 
-  arrowForward, statsChart
+  arrowForward, statsChart, warningOutline 
 } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import { 
@@ -152,33 +170,241 @@ import {
 } from 'chart.js';
 import { Doughnut, Bar } from 'vue-chartjs';
 
+import { onMounted, computed, ref, watch } from 'vue';
+import { useFinanceStore } from '../store/financeStore'; 
+
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 const router = useRouter();
+const financeStore = useFinanceStore();
 
-// --- Data ---
-const doughnutData = {
-  labels: ['รายจ่าย', 'คงเหลือ'],
-  datasets: [{ backgroundColor: ['#4ecdc4', '#eeeeee'], data: [68, 32], borderWidth: 0, cutout: '75%' }]
-};
-const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } };
+const periodFilter = ref('เดือนนี้'); 
 
-const categoryChartData = {
-  labels: ['อาหาร', 'ช้อปปิ้ง', 'เดินทาง', 'เกม', 'สัตว์เลี้ยง'],
-  datasets: [{
-      label: 'รายจ่าย (บาท)',
-      backgroundColor: ['#ff7675', '#74b9ff', '#55efc4', '#a29bfe', '#fdcb6e'],
-      data: [12500, 5000, 3200, 8900, 2400],
-      borderRadius: 5
-  }]
+const isAILoading = ref(true);
+const aiSummary = ref({
+  tag: 'กำลังวิเคราะห์',
+  message: 'ระบบกำลังประมวลผล...'
+});
+
+onMounted(async () => {
+  if (financeStore.transactions.length === 0) {
+    await financeStore.fetchTransactions();
+  }
+  await generateDashboardAI();
+});
+
+watch(periodFilter, async () => {
+  await generateDashboardAI();
+});
+
+// คำนวณยอดเงินรวมสุทธิแบบรวมหนี้ด้วย
+const totalWalletBalance = computed(() => {
+  const allTxs = financeStore.transactions;
+  const tIncome = allTxs.filter((t: any) => t.type === 'income').reduce((sum: number, t: any) => sum + Number(t.amount), 0);
+  const tExpense = allTxs.filter((t: any) => t.type === 'expense').reduce((sum: number, t: any) => sum + Number(t.amount), 0);
+  const tDebt = allTxs.filter((t: any) => t.type === 'debt').reduce((sum: number, t: any) => sum + Number(t.amount), 0);
+  return tIncome - tExpense - tDebt;
+});
+
+const filteredTransactions = computed(() => {
+  const txs = financeStore.transactions;
+  if (periodFilter.value === 'ทั้งหมด') return txs;
+
+  const now = new Date();
+  
+  return txs.filter((t: any) => {
+    let d = new Date();
+    if (t.date && typeof t.date === 'string') d = new Date(t.date);
+    else if (t.date && t.date.toDate) d = t.date.toDate();
+
+    if (periodFilter.value === 'วันนี้') {
+      return d.toDateString() === now.toDateString();
+    } else if (periodFilter.value === 'สัปดาห์นี้') {
+      const today = new Date();
+      const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+      startOfWeek.setHours(0, 0, 0, 0);
+      return d >= startOfWeek;
+    } else if (periodFilter.value === 'เดือนนี้') {
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    } else if (periodFilter.value === 'ปีนี้') {
+      return d.getFullYear() === now.getFullYear();
+    }
+    return true;
+  });
+});
+
+const income = computed(() => {
+  return filteredTransactions.value
+    .filter((t: any) => t.type === 'income')
+    .reduce((sum: number, t: any) => sum + Number(t.amount), 0);
+});
+
+const expense = computed(() => {
+  return filteredTransactions.value
+    .filter((t: any) => t.type === 'expense')
+    .reduce((sum: number, t: any) => sum + Number(t.amount), 0);
+});
+
+const debt = computed(() => {
+  return filteredTransactions.value
+    .filter((t: any) => t.type === 'debt')
+    .reduce((sum: number, t: any) => sum + Number(t.amount), 0);
+});
+
+// เอาหนี้มาหักลบยอดคงเหลือด้วย
+const balance = computed(() => income.value - expense.value - debt.value);
+
+const expensePercent = computed(() => {
+  if (income.value === 0) return 0; 
+  // คิดสัดส่วนจากรายจ่าย + หนี้ เทียบกับรายรับ
+  const percent = ((expense.value + debt.value) / income.value) * 100;
+  return percent > 100 ? 100 : Math.round(percent); 
+});
+
+const doughnutData = computed(() => {
+  const displayBalance = balance.value > 0 ? balance.value : 0;
+  return {
+    labels: ['รายจ่าย', 'หนี้สิน', 'คงเหลือ'],
+    datasets: [{ 
+      backgroundColor: ['#ff7675', '#f39c12', '#eeeeee'], 
+      data: [expense.value, debt.value, displayBalance], 
+      borderWidth: 0, 
+      cutout: '75%' 
+    }]
+  };
+});
+
+const doughnutOptions = { 
+  responsive: true, 
+  maintainAspectRatio: false, 
+  plugins: { legend: { display: false }, tooltip: { enabled: false } } 
 };
+
+// --- ตัวแปลภาษา ---
+const categoryMap: Record<string, string> = {
+  'food': 'ค่าอาหาร',
+  'travel': 'ค่าเดินทาง',
+  'personal': 'ของใช้ส่วนตัว',
+  'shopping': 'ช้อปปิ้ง',
+  'salary': 'ค่าจ้าง / งานพิเศษ',
+  'credit': 'หนี้บัตรเครดิต',
+  'credit_card_debt': 'หนี้บัตรเครดิต',
+  'parttime': 'รับจ๊อบพิเศษ'
+};
+
+const categoryStats = computed(() => {
+  // ดึงทั้ง expense และ debt มาแสดงในกราฟแท่ง
+  const outflows = filteredTransactions.value.filter((t: any) => t.type === 'expense' || t.type === 'debt');
+  const grouped = outflows.reduce((acc: Record<string, number>, curr: any) => {
+    const rawCat = String(curr.category || 'ไม่ระบุหมวดหมู่');
+    const catKey = rawCat.toLowerCase().trim();
+    const displayCat = categoryMap[catKey] || rawCat;
+
+    acc[displayCat] = (acc[displayCat] || 0) + Number(curr.amount);
+    return acc;
+  }, {});
+
+  return Object.entries(grouped).sort((a, b) => b[1] - a[1]);
+});
+
+const topExpenseCategory = computed(() => {
+  return categoryStats.value.length > 0 ? categoryStats.value[0][0] : 'ไม่มีข้อมูล';
+});
+
+const categoryChartData = computed(() => {
+  const labels = categoryStats.value.map(item => item[0]);
+  const data = categoryStats.value.map(item => item[1]);
+  
+  const colors = ['#ff7675', '#f39c12', '#74b9ff', '#55efc4', '#a29bfe', '#fdcb6e', '#ff9ff3', '#feca57', '#48dbfb', '#1dd1a1'];
+  const bgColors = labels.map((_, index) => colors[index % colors.length]);
+
+  return {
+    labels: labels,
+    datasets: [{
+        label: 'ยอดเงิน (บาท)',
+        backgroundColor: bgColors,
+        data: data,
+        borderRadius: 5
+    }]
+  };
+});
+
 const categoryChartOptions = {
-  responsive: true, maintainAspectRatio: false, indexAxis: 'y' as const,
+  responsive: true, 
+  maintainAspectRatio: false, 
+  indexAxis: 'y' as const,
   plugins: { legend: { display: false } },
   scales: { x: { display: false }, y: { grid: { display: false }, ticks: { font: { family: 'Kanit, sans-serif' } } } }
 };
 
-// --- Navigation ---
+const openPeriodSelector = async () => {
+  const actionSheet = await actionSheetController.create({
+    header: 'เลือกช่วงเวลาข้อมูล',
+    buttons: [
+      { text: 'วันนี้', handler: () => { periodFilter.value = 'วันนี้'; } },
+      { text: 'สัปดาห์นี้', handler: () => { periodFilter.value = 'สัปดาห์นี้'; } },
+      { text: 'เดือนนี้', handler: () => { periodFilter.value = 'เดือนนี้'; } },
+      { text: 'ปีนี้', handler: () => { periodFilter.value = 'ปีนี้'; } },
+      { text: 'ทั้งหมด', handler: () => { periodFilter.value = 'ทั้งหมด'; } },
+      { text: 'ยกเลิก', role: 'cancel' }
+    ]
+  });
+  await actionSheet.present();
+};
+
+const generateDashboardAI = async () => {
+  isAILoading.value = true;
+  try {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) throw new Error('ไม่พบ API Key');
+
+    const incomeVal = income.value;
+    const expenseVal = expense.value;
+    const debtVal = debt.value; // ดึงยอดหนี้มาส่งให้ AI ด้วย
+    const balanceVal = balance.value;
+    
+    const outflows = filteredTransactions.value.filter((t: any) => t.type === 'expense' || t.type === 'debt');
+    const grouped = outflows.reduce((acc: any, curr: any) => {
+        const rawCat = String(curr.category || 'อื่นๆ');
+        const displayCat = categoryMap[rawCat.toLowerCase().trim()] || rawCat;
+        acc[displayCat] = (acc[displayCat] || 0) + Number(curr.amount);
+        return acc;
+    }, {});
+
+    const promptText = `
+คุณคือที่ปรึกษาทางการเงินระดับมืออาชีพ ช่วยวิเคราะห์ข้อมูลในช่วงเวลา "${periodFilter.value}" นี้แบบสั้นๆ เพื่อนำไปแสดงในรายงานทางการเงิน:
+รายรับ: ${incomeVal}, รายจ่าย: ${expenseVal}, หนี้สิน: ${debtVal}, คงเหลือ: ${balanceVal}, สัดส่วนเงินออก: ${JSON.stringify(grouped)}
+
+ตอบกลับเป็น JSON เท่านั้น (ไม่ต้องมี markdown) โครงสร้างดังนี้:
+{
+  "tag": "ระบุชื่อกลุ่มพฤติกรรมสั้นๆ 1-2 คำ แบบทางการ (เช่น จัดการหนี้สิน, เฝ้าระวังรายจ่าย, วางแผนลงทุน)",
+  "message": "สรุปคำแนะนำเชิงวิชาการสั้นๆ 1-2 ประโยค แบบทางการและเป็นเหตุเป็นผล"
+}`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+    });
+
+    if (!response.ok) throw new Error('API Error');
+
+    const data = await response.json();
+    let aiText = data.candidates[0].content.parts[0].text;
+    aiText = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
+
+    aiSummary.value = JSON.parse(aiText);
+  } catch (error) {
+    console.error("Dashboard AI Error:", error);
+    aiSummary.value = {
+      tag: 'ข้อมูลไม่เพียงพอ',
+      message: 'อาจเป็นเพราะยอดเคลื่อนไหวทางการเงินมีน้อยเกินไป หรือเกิดปัญหาขัดข้องจากระบบปัญญาประดิษฐ์'
+    };
+  } finally {
+    isAILoading.value = false;
+  }
+};
+
 const goToAIAnalysis = () => {
   router.push('/tabs/ai-analysis'); 
 };
@@ -214,10 +440,7 @@ const goToSummary = () => {
 
 /* Main Content */
 .main-content-container {
-    padding: 0 20px;
-    margin-top: -40px;
-    position: relative;
-    z-index: 20;
+    padding: 0 20px; margin-top: -40px; position: relative; z-index: 20;
 }
 
 /* Overview */
@@ -232,16 +455,18 @@ const goToSummary = () => {
 .chart-center-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
 .chart-center-text .label { font-size: 0.6rem; color: #888; }
 .chart-center-text .value { font-size: 1.2rem; font-weight: bold; color: #333; }
-.stats-text .stat-item { margin-bottom: 10px; }
+.stats-text .stat-item { margin-bottom: 8px; }
 .dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
 .dot.income { background-color: #4ecdc4; }
 .dot.expense { background-color: #ff7675; }
-.value-text { font-weight: bold; font-size: 1.1rem; margin-left: 15px; color: #2d3436; }
+.dot.debt { background-color: #f39c12; }
+.value-text { font-weight: bold; font-size: 1.05rem; margin-left: 15px; color: #2d3436; }
 
-/* Mini Stats */
+/* Mini Stats (2x2 Grid) */
 .mini-stat-card { text-align: center; padding: 12px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin: 5px; border: none; }
 .income-bg { background: #e0f7fa; color: #006064; }
 .expense-bg { background: #ffebee; color: #b71c1c; }
+.debt-bg { background: #fff3e0; color: #d35400; }
 .balance-bg { background: #f3e5f5; color: #4a148c; }
 .mini-stat-card .label { font-size: 0.75rem; opacity: 0.8; margin-bottom: 4px; }
 .mini-stat-card .val { font-weight: bold; font-size: 0.95rem; }
@@ -251,55 +476,28 @@ const goToSummary = () => {
 .section-header h3 { font-size: 1.1rem; font-weight: bold; color: #2d3436; margin: 0; }
 .view-report-btn { font-size: 0.85rem; --color: #74d7e9; }
 .categories-card { border-radius: 20px; margin: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-.bar-chart-container { height: 180px; width: 100%; }
+.bar-chart-container { width: 100%; transition: height 0.3s ease; }
 .chart-note { text-align: center; font-size: 0.8rem; color: #636e72; margin-top: 15px; }
 
-/* 🔥 AI Card (Gemini Sparkle - No Background) 🔥 */
+/* AI Card */
 .persona-card {
-  background: #ffffff;
-  border-radius: 24px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  border: none;
-  margin-top: 25px;
-  overflow: visible; 
+  background: #ffffff; border-radius: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: none; margin-top: 25px; overflow: visible; 
 }
-
 .persona-content { padding: 20px; }
-
 .persona-layout { display: flex; gap: 15px; align-items: flex-start; }
-
-/* 🌟 ปรับตรงนี้: พื้นหลังใส + จัดกลาง 🌟 */
 .ai-icon-box {
-  min-width: 45px;
-  height: 45px;
-  background: transparent; /* ใสปิ๊ง */
+  min-width: 45px; height: 45px; background: transparent; 
   display: flex; align-items: center; justify-content: center;
 }
-
-/* ขนาดโลโก้ */
-.gemini-icon {
-  width: 35px; /* ปรับขนาดตามชอบ */
-  height: 35px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); /* เงาเล็กน้อยให้ดูมีมิติ */
-}
-
+.gemini-icon { width: 35px; height: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
 .ai-text-content { flex: 1; }
-
 .ai-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.ai-label { font-size: 0.75rem; font-weight: 800; color: #b2bec3; text-transform: uppercase; letter-spacing: 0.5px; }
 
-.ai-label {
-  font-size: 0.75rem; font-weight: 800; color: #b2bec3; text-transform: uppercase; letter-spacing: 0.5px;
-}
+.ai-tag { background: #ffeaa7; color: #d35400; font-size: 0.7rem; font-weight: bold; padding: 2px 8px; border-radius: 8px; }
+.ai-tag-loading { background: #b2bec3; padding: 2px 8px; border-radius: 8px; display: flex; align-items: center;}
 
-.ai-tag {
-  background: #ffeaa7; color: #d35400; font-size: 0.7rem; font-weight: bold; padding: 2px 8px; border-radius: 8px;
-}
-
-.ai-message {
-  font-size: 0.9rem; color: #2d3436; line-height: 1.5; margin: 0 0 12px 0; font-weight: 500;
-}
-
-.see-more {
-  color: #0984e3; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; cursor: pointer; opacity: 0.9;
-}
+.ai-message { font-size: 0.9rem; color: #2d3436; line-height: 1.5; margin: 0 0 12px 0; font-weight: 500; }
+.see-more { color: #0984e3; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; cursor: pointer; opacity: 0.9; }
 </style>

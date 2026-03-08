@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router';
 
 import { IonicVue } from '@ionic/vue';
+import { createPinia } from 'pinia'; // 👈 นำเข้า Pinia ตรงนี้
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -21,7 +22,6 @@ import '@ionic/vue/css/flex-utils.css';
 import '@ionic/vue/css/display.css';
 import './theme/variables.css';
 
-
 /**
  * Ionic Dark Mode
  * -----------------------------------------------------
@@ -35,10 +35,12 @@ import '@ionic/vue/css/palettes/dark.system.css';
 
 
 /* Theme variables */
-import './theme/variables.css';
+// import './theme/variables.css'; // อันนี้มันซ้ำกับบรรทัด 24 พี่เลยคอมเมนต์ปิดไว้นะ
 
+const pinia = createPinia(); // 👈 สร้าง instance ของ Pinia
 const app = createApp(App)
   .use(IonicVue)
+  .use(pinia) // 👈 สั่งให้แอปใช้งาน Pinia ตรงนี้
   .use(router);
 
 router.isReady().then(() => {

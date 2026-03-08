@@ -3,78 +3,106 @@
     <ion-content :fullscreen="true" class="content-bg">
       
       <div class="header-container">
-        <ion-button fill="clear" class="back-btn" @click="goBack">
-          <ion-icon :icon="arrowBack" slot="icon-only" color="dark"></ion-icon>
-        </ion-button>
+        <div class="header-top">
+            <ion-button fill="clear" class="back-btn" @click="goBack">
+            <ion-icon :icon="arrowBack" slot="icon-only" color="dark"></ion-icon>
+            </ion-button>
+        </div>
 
         <div class="persona-header text-center">
             <div class="avatar-glow">
-              <img src="/gojo.jpg" alt="AI Avatar" width="100" />
+              <img src="/gojo.jpg" alt="AI Avatar" />
             </div>
-            <h1 class="persona-title">Financial Persona</h1>
+            <h1 class="persona-title">{{ isLoading ? 'Analyzing...' : aiResult.personaName }}</h1>
             <p class="persona-subtitle">ผลการวิเคราะห์พฤติกรรมการใช้จ่าย</p>
         </div>
       </div>
 
       <div class="main-content-container">
-        <ion-card class="score-card">
-            <ion-card-content>
-            <ion-grid>
-                <ion-row class="ion-align-items-center">
-                <ion-col size="8">
-                    <h3>ดัชนีสุขภาพทางการเงิน</h3>
-                    <p class="text-muted">สถานะ: ปานกลาง (Moderate)</p>
-                </ion-col>
-                <ion-col size="4" class="text-right">
-                    <div class="score-circle">6.5</div>
-                </ion-col>
-                </ion-row>
-                <p class="score-desc">ควรเพิ่มสัดส่วนการออมสำรองฉุกเฉิน</p>
-                <ion-progress-bar :value="0.65" color="warning" class="ion-margin-top"></ion-progress-bar>
-            </ion-grid>
-            </ion-card-content>
-        </ion-card>
-
-        <h3 class="section-title">บทวิเคราะห์เชิงลึก (AI Insights) <ion-icon :icon="analytics" color="primary"></ion-icon></h3>
         
-        <ion-card class="insight-card">
-            <ion-card-content>
-            <ion-item lines="none" class="insight-item">
-                <ion-icon :icon="alertCircle" slot="start" color="danger"></ion-icon>
-                <ion-label class="ion-text-wrap">
-                <h2>ข้อควรระวัง: สภาพคล่องระยะสั้น</h2>
-                <p>ตรวจพบธุรกรรมในหมวด <b>"ร้านอาหารและบริการบุฟเฟต์"</b> สูงกว่าค่าเฉลี่ย 30% ในสัปดาห์นี้ อาจส่งผลกระทบต่อเป้าหมายการออมรายเดือน</p>
-                </ion-label>
-            </ion-item>
+        <div v-if="isLoading" class="loading-container text-center">
+            <ion-spinner name="crescent" color="primary" class="loading-spinner"></ion-spinner>
+            <p class="loading-text">ระบบกำลังประมวลผลข้อมูลทางการเงิน...</p>
+        </div>
+
+        <div v-else>
+            <ion-card class="score-card">
+                <ion-card-content>
+                <ion-grid>
+                    <ion-row class="ion-align-items-center">
+                    <ion-col size="8">
+                        <h3>ดัชนีสุขภาพทางการเงิน</h3>
+                        <p class="text-muted">สถานะ: {{ aiResult.status }}</p>
+                    </ion-col>
+                    <ion-col size="4" class="text-right">
+                        <div class="score-circle" :class="getScoreColor(aiResult.score)">
+                            {{ aiResult.score }}
+                        </div>
+                    </ion-col>
+                    </ion-row>
+                    <p class="score-desc">{{ aiResult.scoreDesc }}</p>
+                    <ion-progress-bar :value="aiResult.score / 10" :color="getProgressBarColor(aiResult.score)" class="ion-margin-top"></ion-progress-bar>
+                </ion-grid>
+                </ion-card-content>
+            </ion-card>
+
+            <h3 class="section-title">บทวิเคราะห์เชิงลึก (AI Insights) <ion-icon :icon="analytics" color="primary"></ion-icon></h3>
             
-            <div class="divider"></div>
+            <ion-card class="insight-card">
+                <ion-card-content>
+                <ion-item lines="none" class="insight-item">
+                    <ion-icon :icon="alertCircle" slot="start" color="danger"></ion-icon>
+                    <ion-label class="ion-text-wrap">
+                    <h2>{{ aiResult.warningTitle }}</h2>
+                    <p>{{ aiResult.warningDesc }}</p>
+                    </ion-label>
+                </ion-item>
+                
+                <div class="divider"></div>
 
-            <ion-item lines="none" class="insight-item">
-                <ion-icon :icon="thumbsUp" slot="start" color="success"></ion-icon>
-                <ion-label class="ion-text-wrap">
-                <h2>จุดแข็งทางการเงิน</h2>
-                <p>วินัยการชำระค่าสาธารณูปโภคและค่าเช่าที่พักอาศัยมีความสม่ำเสมอดีเยี่ยม (Credit Scoring อยู่ในเกณฑ์ดี)</p>
-                </ion-label>
-            </ion-item>
-            </ion-card-content>
-        </ion-card>
+                <ion-item lines="none" class="insight-item">
+                    <ion-icon :icon="thumbsUp" slot="start" color="success"></ion-icon>
+                    <ion-label class="ion-text-wrap">
+                    <h2>{{ aiResult.strengthTitle }}</h2>
+                    <p>{{ aiResult.strengthDesc }}</p>
+                    </ion-label>
+                </ion-item>
+                </ion-card-content>
+            </ion-card>
 
-        <h3 class="section-title">เป้าหมายที่แนะนำ (Action Plan) <ion-icon :icon="flag" color="dark"></ion-icon></h3>
-        <ion-card class="mission-card">
-            <ion-card-header>
-            <ion-card-subtitle>อุปกรณ์กีฬาและนันทนาการ (Badminton)</ion-card-subtitle>
-            <ion-card-title>เป้าหมายส่วนต่าง: 2,500 บาท</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-            <p>
-                หากลดค่าใช้จ่ายหมวดเครื่องดื่ม (Coffee & Tea) ลง 15% จะสามารถจัดสรรเงินทุนเพื่อจัดซื้ออุปกรณ์ได้ภายในระยะเวลา 2 เดือน
-            </p>
-            <ion-button expand="block" color="light" class="ion-margin-top action-btn" shape="round">
-                <ion-icon slot="start" :icon="checkmarkCircle"></ion-icon>
-                ยืนยันแผนการออม
-            </ion-button>
-            </ion-card-content>
-        </ion-card>
+            <div v-if="showActionPlan && aiResult.actionTitle !== '-'">
+                <h3 class="section-title">ข้อเสนอแนะเชิงกลยุทธ์ (Action Plan) <ion-icon :icon="flag" color="dark"></ion-icon></h3>
+                <ion-card class="mission-card">
+                    <ion-card-header>
+                    <ion-card-subtitle>คำแนะนำจากระบบ AI</ion-card-subtitle>
+                    <ion-card-title>{{ aiResult.actionTitle }}</ion-card-title>
+                    </ion-card-header>
+                    <ion-card-content>
+                    <p>{{ aiResult.actionDesc }}</p>
+                    <ion-button expand="block" color="light" class="ion-margin-top action-btn" shape="round" @click="acceptMission">
+                        <ion-icon slot="start" :icon="checkmarkCircle"></ion-icon>
+                        รับทราบข้อเสนอแนะ
+                    </ion-button>
+                    </ion-card-content>
+                </ion-card>
+            </div>
+
+            <div v-if="savedGoals.length > 0" class="ion-margin-top" style="margin-bottom: 40px;">
+                <h3 class="section-title">เป้าหมายที่บันทึกไว้ (My Goals) <ion-icon :icon="star" color="warning"></ion-icon></h3>
+                <ion-card v-for="(goal, index) in savedGoals" :key="index" class="saved-goal-card">
+                    <ion-item lines="none">
+                        <ion-icon :icon="checkmarkCircle" slot="start" color="success"></ion-icon>
+                        <ion-label class="ion-text-wrap">
+                            <h2>{{ goal.title }}</h2>
+                            <p>{{ goal.desc }}</p>
+                        </ion-label>
+                        <ion-button fill="clear" color="medium" slot="end" @click="removeGoal(index)">
+                            <ion-icon :icon="trashOutline" slot="icon-only"></ion-icon>
+                        </ion-button>
+                    </ion-item>
+                </ion-card>
+            </div>
+        </div>
       </div>
 
     </ion-content>
@@ -83,21 +111,198 @@
 
 <script setup lang="ts">
 import { 
-  IonPage, IonContent, 
-  IonCard, IonCardContent, 
+  IonPage, IonContent, IonSpinner,
+  IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle,
   IonGrid, IonRow, IonCol, IonProgressBar, IonIcon, 
-  IonItem, IonLabel, IonCardHeader, IonCardSubtitle, 
-  IonCardTitle, IonButton 
+  IonItem, IonLabel, IonButton, toastController 
 } from '@ionic/vue';
-import { analytics, alertCircle, thumbsUp, flag, checkmarkCircle, arrowBack } from 'ionicons/icons';
+import { 
+  analytics, alertCircle, thumbsUp, flag, 
+  checkmarkCircle, arrowBack, star, trashOutline 
+} from 'ionicons/icons';
 import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { useFinanceStore } from '../store/financeStore';
 
 const router = useRouter();
+const financeStore = useFinanceStore();
 
-// ฟังก์ชันสำหรับปุ่ม Back
 const goBack = () => {
-  // จะใช้ router.back() หรือระบุ path ชัดเจนก็ได้
   router.push('/tabs/habits'); 
+};
+
+const isLoading = ref(true);
+const showActionPlan = ref(true); 
+
+// ตัวแปรสำหรับเก็บรายการเป้าหมายที่กดรับทราบแล้ว
+const savedGoals = ref<{title: string, desc: string}[]>([]);
+
+const aiResult = ref({
+    personaName: 'กำลังวิเคราะห์ข้อมูล...',
+    score: 0,
+    status: '-',
+    scoreDesc: 'รอการประมวลผล...',
+    warningTitle: '-',
+    warningDesc: '-',
+    strengthTitle: '-',
+    strengthDesc: '-',
+    actionTitle: '-',
+    actionDesc: '-'
+});
+
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+// พจนานุกรมแปลภาษาหมวดหมู่
+const categoryMap: Record<string, string> = {
+  'food': 'ค่าอาหาร',
+  'travel': 'ค่าเดินทาง',
+  'personal': 'ของใช้ส่วนตัว',
+  'shopping': 'ช้อปปิ้ง',
+  'salary': 'ค่าจ้าง / งานพิเศษ',
+  'credit': 'หนี้บัตรเครดิต',
+  'credit_card_debt': 'หนี้บัตรเครดิต',
+  'parttime': 'รับจ๊อบพิเศษ'
+};
+
+onMounted(async () => {
+    // โหลดเป้าหมายที่เคยบันทึกไว้
+    const storedGoals = localStorage.getItem('ai_saved_goals');
+    if (storedGoals) {
+        savedGoals.value = JSON.parse(storedGoals);
+    }
+
+    if (financeStore.transactions.length === 0) {
+        await financeStore.fetchTransactions();
+    }
+    // กลับมายิงออโต้เหมือนเดิม
+    await generateAIAnalysis();
+});
+
+const generateAIAnalysis = async () => {
+    isLoading.value = true;
+    showActionPlan.value = true; 
+    try {
+        if (!apiKey) {
+            throw new Error('ไม่พบ VITE_GEMINI_API_KEY ในไฟล์ .env');
+        }
+
+        const allTxs = financeStore.transactions;
+        
+        const income = allTxs.filter((t: any) => t.type === 'income').reduce((sum: number, t: any) => sum + Number(t.amount), 0);
+        const expense = allTxs.filter((t: any) => t.type === 'expense').reduce((sum: number, t: any) => sum + Number(t.amount), 0);
+        const debt = allTxs.filter((t: any) => t.type === 'debt').reduce((sum: number, t: any) => sum + Number(t.amount), 0);
+        const balance = income - expense - debt;
+        
+        const outflows = allTxs.filter((t: any) => t.type === 'expense' || t.type === 'debt');
+        const grouped = outflows.reduce((acc: any, curr: any) => {
+            const rawCat = String(curr.category || 'อื่นๆ');
+            const displayCat = categoryMap[rawCat.toLowerCase().trim()] || rawCat;
+            acc[displayCat] = (acc[displayCat] || 0) + Number(curr.amount);
+            return acc;
+        }, {});
+
+        const promptText = `
+        คุณคือผู้เชี่ยวชาญและที่ปรึกษาด้านการเงินระดับมืออาชีพ กรุณาวิเคราะห์พฤติกรรมการใช้จ่ายจากข้อมูลต่อไปนี้ เพื่อนำไปประกอบรายงานเชิงวิชาการ:
+        - รายรับรวม: ${income} บาท
+        - รายจ่ายรวม: ${expense} บาท
+        - หนี้สินรวม: ${debt} บาท
+        - เงินคงเหลือ: ${balance} บาท
+        - สัดส่วนเงินที่จ่ายออก (รวมรายจ่ายและหนี้): ${JSON.stringify(grouped)}
+
+        กรุณาวิเคราะห์และตอบกลับมาเป็นรูปแบบ JSON เท่านั้น ห้ามมีข้อความอื่นผสม (ไม่ต้องมี markdown \`\`\`json) โดยมีโครงสร้างดังนี้:
+        {
+            "personaName": "ตั้งชื่อกลุ่มพฤติกรรมทางการเงินแบบเป็นทางการ (เช่น กลุ่มจัดการหนี้สิน, กลุ่มเฝ้าระวังรายจ่าย, กลุ่มวางแผนการลงทุน)",
+            "score": "ให้คะแนนสุขภาพการเงิน 0-10 (เป็นตัวเลขเท่านั้น)",
+            "status": "สถานะทางการเงิน (เช่น ดีเยี่ยม, ปานกลาง, ต้องปรับปรุง)",
+            "scoreDesc": "สรุปภาพรวมสุขภาพทางการเงินสั้นๆ 1 ประโยค ด้วยภาษาทางการ",
+            "warningTitle": "ชื่อหัวข้อความเสี่ยงทางการเงินที่พบ (เน้นเรื่องหนี้สินถ้ายอดสูง)",
+            "warningDesc": "อธิบายความเสี่ยงและผลกระทบอย่างเป็นเหตุเป็นผล",
+            "strengthTitle": "ชื่อหัวข้อจุดแข็งทางการเงิน",
+            "strengthDesc": "อธิบายจุดแข็งพร้อมเหตุผลประกอบ",
+            "actionTitle": "ข้อเสนอแนะเชิงกลยุทธ์ 1 ข้อ",
+            "actionDesc": "แนวทางปฏิบัติที่สามารถวัดผลได้ เพื่อพัฒนาสุขภาพทางการเงิน"
+        }
+        `;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: promptText }] }]
+            })
+        });
+
+        if (!response.ok) {
+            const errorDetails = await response.json();
+            console.error("รายละเอียด Error จาก Google:", errorDetails);
+            
+            if (response.status === 429) {
+                throw new Error('โควต้า AI เต็มชั่วคราว โปรดรอสัก 1 นาทีแล้วลองใหม่');
+            } else if (response.status === 400) {
+                throw new Error('รูปแบบข้อมูลที่ส่งไปไม่ถูกต้อง (Bad Request)');
+            }
+            throw new Error(`การเชื่อมต่อล้มเหลว: ${errorDetails.error?.message || 'โปรดตรวจสอบ API Key'}`);
+        }
+
+        const data = await response.json();
+        let aiText = data.candidates[0].content.parts[0].text;
+        
+        aiText = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
+        aiResult.value = JSON.parse(aiText);
+
+    } catch (error: any) {
+        console.error("Error generating AI analysis:", error);
+        aiResult.value = {
+            personaName: 'ข้อผิดพลาดของระบบ',
+            score: 0,
+            status: 'เชื่อมต่อล้มเหลว',
+            scoreDesc: error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์',
+            warningTitle: 'ปัญหาการดึงข้อมูล',
+            warningDesc: error.message || 'ไม่สามารถติดต่อปัญญาประดิษฐ์ได้ โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตหรือการตั้งค่าสภาพแวดล้อม (.env)',
+            strengthTitle: '-',
+            strengthDesc: '-',
+            actionTitle: 'แนวทางการแก้ไข',
+            actionDesc: 'โปรดตรวจสอบความถูกต้องของ API Key ในไฟล์ .env หรือหากโควต้าเต็ม โปรดรอสักครู่แล้วทำรายการใหม่'
+        };
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+const acceptMission = async () => {
+    savedGoals.value.push({
+        title: aiResult.value.actionTitle,
+        desc: aiResult.value.actionDesc
+    });
+
+    localStorage.setItem('ai_saved_goals', JSON.stringify(savedGoals.value));
+    showActionPlan.value = false; 
+
+    const toast = await toastController.create({
+        message: 'บันทึกเป้าหมายลงคลังเรียบร้อยแล้ว!',
+        duration: 2500,
+        position: 'bottom',
+        color: 'success',
+        icon: checkmarkCircle
+    });
+    await toast.present();
+};
+
+const removeGoal = (index: number) => {
+    savedGoals.value.splice(index, 1);
+    localStorage.setItem('ai_saved_goals', JSON.stringify(savedGoals.value));
+};
+
+const getScoreColor = (score: number) => {
+    if (score >= 8) return 'score-excellent';
+    if (score >= 5) return 'score-moderate';
+    return 'score-poor';
+};
+
+const getProgressBarColor = (score: number) => {
+    if (score >= 8) return 'success';
+    if (score >= 5) return 'warning';
+    return 'danger';
 };
 </script>
 
@@ -112,23 +317,23 @@ const goBack = () => {
   position: relative;
 }
 
-/* จัดตำแหน่งปุ่ม Back ให้อยู่มุมซ้ายบน */
+.header-top { height: 40px; position: relative; }
+
 .back-btn {
-    position: absolute;
-    top: 10px;
-    left: 5px;
-    z-index: 100;
-    --padding-start: 10px;
+    position: absolute; top: 0; left: -10px;
+    z-index: 100; --padding-start: 10px;
 }
 
-.persona-header { margin-top: 20px; }
+.persona-header { margin-top: 10px; }
+
+.avatar-glow {
+    display: flex; justify-content: center; margin-bottom: 10px;
+}
 
 .avatar-glow img {
-  border-radius: 50%;
-  background: white;
-  padding: 5px;
+  border-radius: 50%; background: white; padding: 5px;
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-  width: 80px; height: 80px;
+  width: 80px; height: 80px; object-fit: cover;
 }
 
 .persona-title {
@@ -143,15 +348,27 @@ const goBack = () => {
     padding: 0 20px; margin-top: -40px; position: relative; z-index: 10;
 }
 
+/* Loading Spinner */
+.loading-container {
+    background: white; border-radius: 16px; padding: 50px 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08); margin-top: 20px;
+}
+.loading-spinner { transform: scale(1.5); margin-bottom: 20px; }
+.loading-text { color: #636e72; font-weight: 500; font-size: 0.9rem; }
+
 /* Score Card */
 .score-card {
   border-radius: 16px; box-shadow: 0 10px 20px rgba(0,0,0,0.08); margin-bottom: 25px;
 }
 .score-circle {
-  background: #2d3436; color: #fdcb6e; width: 50px; height: 50px;
-  border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  font-weight: bold; float: right; font-size: 0.9rem;
+  width: 50px; height: 50px; border-radius: 50%; 
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold; float: right; font-size: 1.1rem; color: white;
 }
+.score-excellent { background: #00b894; }
+.score-moderate { background: #fdcb6e; color: #2d3436; }
+.score-poor { background: #ff7675; }
+
 .score-desc { font-size: 0.8rem; color: #888; margin-top: 5px; margin-bottom: 0; }
 
 /* Titles */
@@ -172,10 +389,30 @@ const goBack = () => {
 /* Mission Card */
 .mission-card {
   background: linear-gradient(135deg, #2d3436 0%, #1a1a1a 100%);
-  color: white; border-radius: 16px; margin-inline: 0; margin-bottom: 40px;
+  color: white; border-radius: 16px; margin-inline: 0; margin-bottom: 20px;
 }
 .mission-card ion-card-subtitle { color: #fdcb6e; opacity: 1; font-weight: 600; }
-.mission-card ion-card-title { color: white; font-weight: bold; font-size: 1.3rem; }
-.mission-card p { opacity: 0.9; font-size: 0.9rem; }
+.mission-card ion-card-title { color: white; font-weight: bold; font-size: 1.2rem; line-height: 1.4; }
+.mission-card p { opacity: 0.9; font-size: 0.9rem; margin-top: 10px; }
 .action-btn { --color: #2d3436; font-weight: bold; }
+
+/* Saved Goal Card */
+.saved-goal-card {
+  border-radius: 12px;
+  border-left: 4px solid #00b894;
+  margin-inline: 0;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+}
+.saved-goal-card h2 {
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: #2d3436;
+  margin-bottom: 4px;
+}
+.saved-goal-card p {
+  font-size: 0.85rem;
+  color: #636e72;
+  line-height: 1.4;
+}
 </style>
