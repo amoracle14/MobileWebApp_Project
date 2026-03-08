@@ -99,7 +99,6 @@ import { onIonViewWillEnter } from '@ionic/vue'
 import { collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth' 
 import { db } from '@/firebase'
-import { auth } from '@/firebase' 
 import { useRoute, useRouter } from 'vue-router'
 
 addIcons({ 'calendar-outline': calendarOutline })
