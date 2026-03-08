@@ -1,194 +1,563 @@
+```vue
 <template>
   <ion-page>
     <ion-content :fullscreen="true">
+
+      <!-- HEADER -->
       <div class="header-container">
+
         <img src="/Group 237.png" class="bg-decoration" />
+
         <div class="content-wrapper">
+
           <div class="user-info">
+
             <div class="profile-section">
+
               <ion-avatar class="avatar">
                 <img src="/gojo.jpg" />
               </ion-avatar>
+
               <div class="wallet-balance">
-                <h2>฿ 15,960</h2>
+                <h2>฿ {{ balance.toLocaleString() }}</h2>
                 <p>บัญชี : xxx-x-xx890-x</p>
               </div>
+
             </div>
+
             <ion-icon :icon="menuOutline" class="menu-icon"></ion-icon>
+
           </div>
 
+
           <div class="wallet-card-main">
+
             <div class="wallet-icon-container">
+
               <img src="/wallet.png" class="wallet-img" />
+
               <div class="wallet-text">
                 <h3>กระเป๋าตังที่ 1</h3>
                 <p>รายรับและรายจ่ายของฉัน</p>
               </div>
+
             </div>
+
           </div>
+
         </div>
 
+
         <div class="stats-badges">
+
           <div class="test-quiz-card" @click="$router.push('/quiz/1')">
             <p>แบบทดสอบ</p>
             <span>คุณคือนักออมแบบไหน</span>
+
             <ion-icon
               :icon="chevronForwardOutline"
               class="quiz-arrow"
             ></ion-icon>
           </div>
-<div class="right-badges-group">
-    <div class="days-badge">698 วัน</div>
-    <div class="items-badge">1,986 รายการ</div>
-  </div>
+
+
+          <div class="right-badges-group">
+            <div class="days-badge">
+              {{ days.length }} วัน
+            </div>
+
+            <div class="items-badge">
+              {{ transactions.length }} รายการ
+            </div>
+          </div>
+
         </div>
+
       </div>
 
+
+
+      <!-- MAIN CONTENT -->
       <div class="main-content">
+
         <h3 class="section-title">รายละเอียด</h3>
+
+
+        <!-- การใช้จ่ายล่าสุด -->
         <div class="recent-card">
-          <div class="card-header">
-            <span><span class="dot"></span> รายการล่าสุด</span>
-            <span class="view-all"
-              >ดูทั้งหมด <ion-icon :icon="chevronForwardOutline"></ion-icon
-            ></span>
-          </div>
-          <div class="transaction-detail">
-            <div class="row"><span>หมวดหมู่</span> <span>อาหาร</span></div>
-            <div class="row">
-              <span>จำนวนเงิน</span> <span class="amount-negative">-300</span>
-            </div>
-            <div class="row"><span>วันที่</span> <span>15 ม.ค. 2569</span></div>
-            <div class="row">
-              <span>รายละเอียด</span> <span>กินข้าวที่ร้านบลาๆๆ</span>
-            </div>
-          </div>
-        </div>
-        <div class="recent-card">
-          <div class="summary-card income">
-            <div class="summary-icon">
-              <img src="/dollars.png" class="summary-img" alt="income" />
-            </div>
 
-            <div class="summary-text-container">
-              <div class="main-label">รายรับเดือนนี้</div>
-
-              <div class="sub-detail">
-                <img src="/flag.png" class="mini-flag" />
-                <span class="sub-amount">25,960</span>
-                <span class="sub-currency">THB</span>
-              </div>
-            </div>
-
-            <div class="summary-amount">25,960 <span>THB</span></div>
-          </div>
-
-          <div class="summary-card debt">
-            <div class="summary-icon">
-              <img src="/money-bags.png" class="summary-img" alt="debt" />
-            </div>
-            <div class="summary-text">หนี้สิน</div>
-            <div class="summary-amount">10,895 <span>THB</span></div>
-          </div>
-        </div>
-        <div class="recent-card">
           <div class="card-header">
             <span><span class="dot"></span>การใช้จ่ายล่าสุด</span>
           </div>
-          <!-- Day Cards -->
-          <ion-card
-            v-for="day in days"
-            :key="day.date"
-            style="box-shadow: none; background-color: white; "
-          >
+<div
+  v-if="latestTransaction"
+  class="transaction-item"
+>
 
-              <div class="day-header">
-                <div class="date">{{ day.date }}</div>
-                <div class="count">{{ day.items.length }} รายการ</div>
-              </div>
+  <div class="transaction-detail">
 
-              <div class="summary">
-                <ion-chip color="danger">
-                  <ion-label>{{ day.expense }} THB</ion-label>
-                </ion-chip>
-                <ion-chip color="success">
-                  <ion-label>{{ day.income }} THB</ion-label>
-                </ion-chip>
-                <ion-chip color="primary">
-                  <ion-label>คงเหลือ : {{ day.balance }} THB</ion-label>
-                </ion-chip>
-              </div>
+    <div class="row">
+      <span>หมวดหมู่</span>
+      <span>
+        {{ categoryMap[latestTransaction.category] || latestTransaction.category }}
+      </span>
+    </div>
 
-              <div class="items">
-                <ion-card
-                  style="
-                    border: 0.1px solid lightgrey;
-                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-                    border-radius: 10px;
-                    background-color: white;
-                  "
-                  v-for="item in day.items"
-                  :key="item.id"
-                  class="item-card"
-                >
-                  <ion-card-content>
-                    <div class="icon">{{ item.icon }}</div>
-                    <div class="name">{{ item.name }}</div>
-                    <div
-                      :class="['amount', item.amount < 0 ? 'minus' : 'plus']"
-                    >
-                      {{ item.amount }} THB
-                    </div>
-                    <div class="time">{{ item.time }}</div>
-                  </ion-card-content>
-                </ion-card>
-              </div>
-           
-          </ion-card>
+    <div class="row">
+      <span>จำนวนเงิน</span>
+
+      <span
+        :class="latestTransaction.type === 'income'
+        ? 'amount-plus'
+        : 'amount-negative'"
+      >
+        {{ latestTransaction.type === 'income' ? '+' : '-' }}
+        {{ latestTransaction.amount }}
+      </span>
+
+    </div>
+
+    <div class="row">
+      <span>วันที่</span>
+      <span>
+        {{ formatDate(latestTransaction.date) }}
+      </span>
+    </div>
+
+    <div class="row">
+      <span>รายละเอียด</span>
+      <span>
+        {{ latestTransaction.note || '-' }}
+      </span>
+    </div>
+
+  </div>
+
+</div>
+
         </div>
+
+
+        </div>
+
+
+
+        <!-- SUMMARY MONTH -->
+        <div class="recent-card">
+
+          <div class="summary-card income">
+
+            <div class="summary-text">
+              รายรับเดือนนี้
+            </div>
+
+            <div class="summary-amount">
+              {{ incomeMonth.toLocaleString() }} THB
+            </div>
+
+          </div>
+
+
+          <div class="summary-card debt">
+
+            <div class="summary-text">
+              รายจ่ายเดือนนี้
+            </div>
+
+            <div class="summary-amount">
+              {{ expenseMonth.toLocaleString() }} THB
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+<!-- สรุปรายวันล่าสุด -->
+<div class="recent-card">
+
+  <div class="card-header">
+    <span><span class="dot"></span>สรุปรายวันล่าสุด</span>
+  </div>
+
+  <div
+    v-for="day in days"
+    :key="day.date"
+    class="day-container"
+  >
+
+    <div class="day-header">
+
+      <div class="date">
+        {{ formatDisplayDate(day.date) }}
       </div>
 
+      <div class="count">
+        {{ day.items.length }} รายการ
+      </div>
+
+    </div>
+
+
+    <div class="summary">
+
+      <ion-chip color="danger">
+        <ion-label>
+          -{{ day.expense.toLocaleString() }} THB
+        </ion-label>
+      </ion-chip>
+
+      <ion-chip color="success">
+        <ion-label>
+          +{{ day.income.toLocaleString() }} THB
+        </ion-label>
+      </ion-chip>
+
+      <ion-chip color="primary">
+        <ion-label>
+          คงเหลือ : {{ day.balance.toLocaleString() }} THB
+        </ion-label>
+      </ion-chip>
+
+    </div>
+
+
+<div class="items">
+
+  <div
+    v-for="item in day.items"
+    :key="item.id"
+    class="item-card"
+  >
+
+    <div class="icon">
+      {{ getCategoryIcon(item.category,item.type) }}
+    </div>
+
+    <div class="name">
+      {{ item.note || item.category }}
+    </div>
+
+    <div
+      :class="item.type === 'income'
+      ? 'amount-plus'
+      : 'amount-negative'"
+    >
+      {{ item.type === 'income' ? '+' : '-' }}
+      {{ item.amount }}
+    </div>
+
+    <div class="time">
+      {{ getFakeTime(item.date,item.id) }}
+    </div>
+
+  </div>
+
+</div>
+
+    </div>
+
+  </div>
+
+
+
+
+ 
+
+    
+
+
+
+
+      <!-- ADD BUTTON -->
       <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-        <ion-button class="add-btn" router-link="/add-transaction">
-          <ion-icon slot="start" :icon="addOutline"></ion-icon>
+
+        <ion-button
+          class="add-btn"
+          router-link="/add-transaction"
+        >
+
+          <ion-icon
+            slot="start"
+            :icon="addOutline"
+          ></ion-icon>
+
           เพิ่มรายการ
+
         </ion-button>
+
       </ion-fab>
+
+
     </ion-content>
   </ion-page>
 </template>
 
+
+
+
 <script setup lang="ts">
-import {
-  IonPage,
-  IonContent,
-  IonAvatar,
-  IonIcon,
-  IonFab,
-  IonButton,
-} from "@ionic/vue";
-import {
-  menuOutline,
-  chevronForwardOutline,
-  addOutline,
-  cashOutline,
-  walletOutline,
-} from "ionicons/icons";
+import { ref, onMounted, computed } from "vue"
 
-const days = [
-  {
-    date: "12 ม.ค. 2026",
-    expense: -500,
-    income: 1500,
-    balance: 1000,
-    items: [
-      { id: 1, name: "อาหาร", amount: -500, time: "12:00", icon: "🍔" },
-      { id: 2, name: "รายได้", amount: 1000, time: "16:00", icon: "💰" },
-      { id: 3, name: 'ไลฟ์', amount: 500, time: '17:00', icon: '🎁' }
+import {
+IonPage,
+IonContent,
+IonAvatar,
+IonCard,
+IonCardContent,
+IonIcon,
+IonFab,
+IonButton,
+IonChip,
+IonLabel
+} from "@ionic/vue"
 
-    ],
-  },
-];
+import {
+menuOutline,
+chevronForwardOutline,
+addOutline
+} from "ionicons/icons"
+
+import { collection,getDocs,query,where } from "firebase/firestore"
+import { getAuth,onAuthStateChanged } from "firebase/auth"
+
+import { db } from "../firebase"
+
+
+
+type Transaction = {
+id:string
+amount:number
+category:string
+date:string
+note:string
+type:"income"|"expense"
+userId:string
+}
+
+
+type DayGroup = {
+date:string
+income:number
+expense:number
+balance:number
+items:Transaction[]
+}
+
+
+const transactions = ref<Transaction[]>([])
+const days = ref<DayGroup[]>([])
+
+const incomeMonth = ref(0)
+const expenseMonth = ref(0)
+const balance = ref(0)
+
+const latestTransaction = computed(() => {
+  if (!transactions.value.length) return null
+
+  return [...transactions.value]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
+})
+
+const categoryMap:Record<string,string> = {
+food:"อาหาร",
+shopping:"ช้อปปิ้ง",
+travel:"เดินทาง",
+salary:"เงินเดือน",
+other:"อื่นๆ"
+}
+
+
+
+function formatDate(date:string){
+
+return new Date(date).toLocaleDateString("th-TH")
+
+}
+
+
+
+function formatDisplayDate(date:string){
+
+return new Date(date).toLocaleDateString("th-TH",{
+day:"numeric",
+month:"short",
+year:"numeric"
+})
+
+}
+
+
+
+function getCategoryIcon(category:string,type:string){
+
+const map:Record<string,string> = {
+
+food:"🍔",
+shopping:"🛒",
+travel:"🚌",
+salary:"💼",
+gift:"🎁",
+health:"💊",
+education:"📚",
+other:"📦"
+
+}
+
+if(map[category]) return map[category]
+
+return type === "income" ? "💰" : "💸"
+
+}
+
+
+
+function getFakeTime(date:string,id:string){
+
+const mockTimes=["12:00","16:00","17:00","18:30","19:30"]
+
+let sum=0
+
+const text=date+id
+
+for(let i=0;i<text.length;i++){
+sum+=text.charCodeAt(i)
+}
+
+return mockTimes[sum % mockTimes.length]
+
+}
+
+
+
+async function loadTransactionsByUser(uid:string){
+
+const q=query(
+collection(db,"transactions"),
+where("userId","==",uid)
+)
+
+const snapshot=await getDocs(q)
+
+const txs:Transaction[]=[]
+
+snapshot.forEach(docSnap=>{
+
+const data=docSnap.data()
+
+txs.push({
+id:docSnap.id,
+amount:Number(data.amount||0),
+category:data.category||"other",
+date:data.date||"",
+note:data.note||"",
+type:data.type==="income"?"income":"expense",
+userId:data.userId||""
+})
+
+})
+
+transactions.value=txs.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5)
+
+groupByDay(txs)
+
+calculateSummary(txs)
+
+}
+
+
+
+function groupByDay(list:Transaction[]){
+
+const grouped:Record<string,DayGroup>={}
+
+list.forEach(item=>{
+
+if(!grouped[item.date]){
+
+grouped[item.date]={
+date:item.date,
+income:0,
+expense:0,
+balance:0,
+items:[]
+}
+
+}
+
+grouped[item.date].items.push(item)
+
+if(item.type==="income"){
+grouped[item.date].income+=item.amount
+}else{
+grouped[item.date].expense+=item.amount
+}
+
+grouped[item.date].balance=
+grouped[item.date].income-
+grouped[item.date].expense
+
+})
+
+days.value=Object.values(grouped)
+.sort((a,b)=>b.date.localeCompare(a.date))
+.slice(0,5)
+
+}
+
+
+
+function calculateSummary(list:Transaction[]){
+
+let income=0
+let expense=0
+
+const now=new Date()
+
+list.forEach(item=>{
+
+const d=new Date(item.date)
+
+if(
+d.getMonth()===now.getMonth() &&
+d.getFullYear()===now.getFullYear()
+){
+
+if(item.type==="income"){
+income+=item.amount
+}else{
+expense+=item.amount
+}
+
+}
+
+})
+
+incomeMonth.value=income
+expenseMonth.value=expense
+balance.value=income-expense
+
+}
+
+
+
+onMounted(()=>{
+
+const auth=getAuth()
+
+onAuthStateChanged(auth,async user=>{
+
+if(user){
+
+await loadTransactionsByUser(user.uid)
+
+}
+
+})
+
+})
+
 </script>
 
 <style scoped>
@@ -412,6 +781,10 @@ const days = [
   color: #ff5e5e;
   font-weight: bold;
 }
+.amount-plus{
+  color:#22c55e;
+  font-weight:600;
+}
 
 .summary-card {
   display: flex;
@@ -536,7 +909,19 @@ ion-card {
   font-weight: bold;
   margin-bottom: 4px;
 }
+.item-card{
+ 
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  margin-top:10px;
 
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+
+  background:white;
+  box-shadow:0 2px 6px rgba(0,0,0,0.05);
+}
 .amount.plus {
   color: #34C759;
 }
