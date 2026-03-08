@@ -144,12 +144,22 @@ const router = useRouter()
 
 const transactions = ref<any[]>([])
 
+/* แปลหมวดหมู่ทั้งหมดเป็นภาษาไทย */
+
 const categoryMap: Record<string, string> = {
+
   food: "อาหาร",
   travel: "การเดินทาง",
   shopping: "ช้อปปิ้ง",
+
   salary: "เงินเดือน",
+  parttime: "ค่าจ้าง / งานพิเศษ",
+
+  personal: "หนี้ส่วนตัว",
+  credit_card_debt: "หนี้บัตรเครดิต",
+
   other: "อื่นๆ"
+
 }
 
 const formatDate = (date: any) => {
@@ -157,10 +167,10 @@ const formatDate = (date: any) => {
   if (!date) return "-"
 
   if (date.seconds) {
-    return new Date(date.seconds * 1000).toLocaleDateString()
+    return new Date(date.seconds * 1000).toLocaleDateString("th-TH")
   }
 
-  return new Date(date).toLocaleDateString()
+  return new Date(date).toLocaleDateString("th-TH")
 
 }
 
