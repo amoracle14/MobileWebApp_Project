@@ -103,6 +103,8 @@ import { ref } from 'vue'
 import { onIonViewWillEnter } from '@ionic/vue'
 
 import { collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore'
+// 🔥 เพิ่ม getAuth เข้ามาเพื่อดึงข้อมูลคนล็อคอิน
+import { getAuth } from 'firebase/auth' 
 import { db } from '@/firebase'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -119,7 +121,7 @@ const amount = ref('')
 const note = ref('')
 const selectedDate = ref('')
 
-/* โหลดข้อมูลทุกครั้งที่เข้าหน้า */
+/* ฟังก์ชันโหลดข้อมูลทุกครั้งที่เข้าหน้า (ถ้าเป็นการกดเข้ามาแก้ไข) */
 onIonViewWillEnter(async () => {
   if (transactionId) {
     const docRef = doc(db, 'transactions', transactionId)
@@ -134,7 +136,7 @@ onIonViewWillEnter(async () => {
       selectedDate.value = data.date
     }
   } else {
-    // เคลียร์ฟอร์มถ้าเป็นโหมดเพิ่ม
+    // เคลียร์ฟอร์มถ้าเป็นโหมดเพิ่มข้อมูลใหม่
     selectedType.value = 'income'
     category.value = ''
     amount.value = ''
@@ -143,7 +145,7 @@ onIonViewWillEnter(async () => {
   }
 })
 
-/* บันทึก / อัปเดต */
+/* ฟังก์ชันบันทึก / อัปเดตข้อมูล */
 const saveTransaction = async () => {
   try {
     if (!category.value || !amount.value) {
@@ -151,25 +153,38 @@ const saveTransaction = async () => {
       return
     }
 
+    // 🔥 1. เรียกดูว่าใครกำลังล็อคอินอยู่
+    const auth = getAuth()
+    const user = auth.currentUser
+
+    if (!user) {
+      alert('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง')
+      return
+    }
+
+    // 🔥 2. เพิ่มฟิลด์ userId เข้าไปในข้อมูลที่จะส่งขึ้น Database
     const payload = {
       type: selectedType.value,
       category: category.value,
       amount: Number(amount.value),
       note: note.value,
-      date: selectedDate.value
+      date: selectedDate.value,
+      userId: user.uid // <--- จุดสำคัญ! แปะป้ายชื่อเจ้าของเงินไว้ตรงนี้
     }
 
     if (transactionId) {
       await updateDoc(doc(db, 'transactions', transactionId), payload)
+      console.log('การดำเนินการสำเร็จ: อัปเดตข้อมูลเรียบร้อยแล้ว')
     } else {
       await addDoc(collection(db, 'transactions'), payload)
+      console.log('การดำเนินการสำเร็จ: บันทึกข้อมูลใหม่เรียบร้อยแล้ว')
     }
 
-    // 🔥 เด้งกลับแบบไม่ย้อนหน้าเดิม
+    // เด้งกลับไปหน้าธุรกรรมแบบไม่ย้อนหน้าเดิม
     router.replace('/tabs/transactions')
 
   } catch (error) {
-    console.error(error)
+    console.error('ระบบขัดข้อง: เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล', error)
   }
 }
 </script>
