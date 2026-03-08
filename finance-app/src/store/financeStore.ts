@@ -1,38 +1,61 @@
 import { defineStore } from 'pinia';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
+import { getAuth } from 'firebase/auth'; 
 
 export const useFinanceStore = defineStore('finance', {
   state: () => ({
-    transactions: [] as any[], // เก็บประวัติการใช้จ่ายทั้งหมด
+    transactions: [] as any[], // พื้นที่จัดเก็บประวัติการทำธุรกรรมของผู้ใช้งาน
     isLoading: false,
   }),
   
   getters: {
-    // คำนวณรายรับรวม
+    // ฟังก์ชันคำนวณยอดรวมรายรับ
     totalIncome: (state) => {
       return state.transactions
         .filter(t => t.type === 'income')
         .reduce((sum, t) => sum + Number(t.amount), 0);
     },
-    // คำนวณรายจ่ายรวม
+    // ฟังก์ชันคำนวณยอดรวมรายจ่าย
     totalExpense: (state) => {
       return state.transactions
         .filter(t => t.type === 'expense')
         .reduce((sum, t) => sum + Number(t.amount), 0);
     },
-    // ยอดเงินคงเหลือ
+    // ฟังก์ชันคำนวณยอดรวมหนี้สิน
+    totalDebt: (state) => {
+      return state.transactions
+        .filter(t => t.type === 'debt')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+    },
+    // ฟังก์ชันคำนวณยอดเงินคงเหลือสุทธิ (รายรับ - รายจ่าย - หนี้สิน)
     netBalance(): number {
-      return this.totalIncome - this.totalExpense;
+      return this.totalIncome - this.totalExpense - this.totalDebt;
     }
   },
   
   actions: {
-    // ฟังก์ชันดูดข้อมูลจาก Firebase ของเพื่อน
+    // ฟังก์ชันสำหรับเรียกข้อมูลธุรกรรมจากฐานข้อมูล โดยกรองตามรหัสประจำตัวผู้ใช้งาน (User ID)
     async fetchTransactions() {
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      // ตรวจสอบสถานะการเข้าสู่ระบบ
+      if (!user) {
+        console.warn("ระบบขัดข้อง: ไม่พบข้อมูลการยืนยันตัวตนของผู้ใช้งาน ระบบได้ยกเลิกการดึงข้อมูล");
+        this.transactions = []; // ล้างข้อมูลเดิมเพื่อป้องกันการเข้าถึงข้อมูลที่ไม่ได้รับอนุญาต
+        return;
+      }
+
       this.isLoading = true;
       try {
-        const querySnapshot = await getDocs(collection(db, 'transactions'));
+        // สร้างเงื่อนไขในการดึงข้อมูลเฉพาะรายการที่เป็นของผู้ใช้งานปัจจุบัน
+        const q = query(
+          collection(db, 'transactions'), 
+          where('userId', '==', user.uid)
+        );
+        
+        const querySnapshot = await getDocs(q);
         const data: any[] = [];
         
         querySnapshot.forEach((doc) => {
@@ -40,9 +63,9 @@ export const useFinanceStore = defineStore('finance', {
         });
         
         this.transactions = data;
-        console.log("ดึงข้อมูลจาก DBสำเร็จ!", this.transactions);
+        console.log("การดำเนินการสำเร็จ: ดึงข้อมูลจากฐานข้อมูลเสร็จสิ้น");
       } catch (error) {
-        console.error("ดึงข้อมูลไม่ได้:", error);
+        console.error("เกิดข้อผิดพลาดของระบบ: ไม่สามารถดึงข้อมูลจากฐานข้อมูลได้", error);
       } finally {
         this.isLoading = false;
       }
