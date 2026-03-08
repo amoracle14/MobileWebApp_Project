@@ -10,7 +10,7 @@
           <div class="user-info">
             <div class="profile-section">
               <ion-avatar class="avatar">
-                <img src="/gojo.jpg" />
+                <img :src="avatar" />
               </ion-avatar>
 
               <div class="wallet-balance">
@@ -229,8 +229,12 @@ import { menuOutline, chevronForwardOutline, addOutline } from "ionicons/icons";
 
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-
 import { db } from "../firebase";
+
+// 
+import { auth} from "@/firebase"
+import { doc, onSnapshot } from "firebase/firestore"
+// 
 
 type Transaction = {
   id: string;
@@ -256,6 +260,26 @@ const days = ref<DayGroup[]>([]);
 const incomeMonth = ref(0);
 const expenseMonth = ref(0);
 const balance = ref(0);
+
+const avatar = ref("/gojo.jpg") 
+
+// โปรไฟล์พื้นหลัง
+onMounted(()=>{
+  onAuthStateChanged(auth,(user)=>{
+    if(user){
+      const userRef = doc(db,"users",user.uid)
+      onSnapshot(userRef,(docSnap)=>{
+        if(docSnap.exists()){
+          const data = docSnap.data()
+          if(data.avatar){
+            avatar.value = data.avatar
+          }
+        }
+      })
+    }
+  })
+})
+// 
 
 const latestTransaction = computed(() => {
   if (!transactions.value.length) return null;

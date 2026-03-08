@@ -8,7 +8,7 @@
             <div class="user-info">
               <div class="profile-section">
                 <ion-avatar class="avatar">
-                  <img src="/gojo.jpg" alt="Profile" />
+                  <img :src="avatar" />
                 </ion-avatar>
                 <div class="wallet-balance">
                   <h2>฿ {{ totalWalletBalance.toLocaleString() }}</h2>
@@ -183,6 +183,10 @@ import { Doughnut, Bar } from 'vue-chartjs';
 import { onMounted, computed, ref, watch } from 'vue';
 import { useFinanceStore } from '../store/financeStore'; 
 
+import { auth,db } from "@/firebase"
+import { doc, onSnapshot } from "firebase/firestore"
+import { onAuthStateChanged } from "firebase/auth";
+
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 const router = useRouter();
@@ -197,6 +201,25 @@ const aiSummary = ref({
   tag: '-',
   message: '-'
 });
+
+const avatar = ref("/gojo.jpg") 
+// โปรไฟล์พื้นหลัง
+onMounted(()=>{
+  onAuthStateChanged(auth,(user)=>{
+    if(user){
+      const userRef = doc(db,"users",user.uid)
+      onSnapshot(userRef,(docSnap)=>{
+        if(docSnap.exists()){
+          const data = docSnap.data()
+          if(data.avatar){
+            avatar.value = data.avatar
+          }
+        }
+      })
+    }
+  })
+})
+// 
 
 onMounted(async () => {
   if (financeStore.transactions.length === 0) {
