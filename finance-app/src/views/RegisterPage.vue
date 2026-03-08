@@ -113,11 +113,7 @@ const register = async () => {
 <style scoped>
 
 .register-bg{
-  --background: linear-gradient(
-    160deg,
-    #66c7d1,
-    #8fa9d8
-  );
+  --background: linear-gradient(180deg, #74d7e9 0%, #bff0f3 60%, #b2cff4 100%);
 }
 
 .register-container{
