@@ -155,7 +155,7 @@ const categoryMap: Record<string, string> = {
   salary: "เงินเดือน",
   parttime: "ค่าจ้าง / งานพิเศษ",
 
-  personal: "หนี้ส่วนตัว",
+  personal: "ของใช้ส่วนตัว",
   credit_card_debt: "หนี้บัตรเครดิต",
 
   other: "อื่นๆ"
