@@ -104,6 +104,7 @@ import { onIonViewWillEnter } from '@ionic/vue'
 
 import { collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '@/firebase'
+import { auth } from '@/firebase' 
 import { useRoute, useRouter } from 'vue-router'
 
 addIcons({ 'calendar-outline': calendarOutline })
@@ -146,8 +147,16 @@ onIonViewWillEnter(async () => {
 /* บันทึก / อัปเดต */
 const saveTransaction = async () => {
   try {
+
     if (!category.value || !amount.value) {
       alert('กรุณากรอกข้อมูลให้ครบ')
+      return
+    }
+
+    const user = auth.currentUser
+
+    if (!user) {
+      alert("กรุณาเข้าสู่ระบบก่อน")
       return
     }
 
@@ -156,7 +165,8 @@ const saveTransaction = async () => {
       category: category.value,
       amount: Number(amount.value),
       note: note.value,
-      date: selectedDate.value
+      date: selectedDate.value,
+      uid: user.uid
     }
 
     if (transactionId) {
@@ -165,7 +175,6 @@ const saveTransaction = async () => {
       await addDoc(collection(db, 'transactions'), payload)
     }
 
-    // 🔥 เด้งกลับแบบไม่ย้อนหน้าเดิม
     router.replace('/tabs/transactions')
 
   } catch (error) {

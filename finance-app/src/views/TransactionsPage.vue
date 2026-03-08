@@ -19,17 +19,17 @@
           <ion-card-header>
             <div class="card-header-row">
               <ion-card-title class="type-title">
-                {{ 
+                {{
                   item.type === 'income' ? 'รายการรายรับ' :
                   item.type === 'expense' ? 'รายการรายจ่าย' :
                   'รายการหนี้สิน'
                 }}
               </ion-card-title>
 
-              <ion-button 
-                fill="clear" 
-                size="small" 
-                @click="editItem(item.id)" 
+              <ion-button
+                fill="clear"
+                size="small"
+                @click="editItem(item.id)"
                 class="edit-btn">
                 <ion-icon slot="start" :icon="createOutline" />
                 แก้ไข
@@ -45,7 +45,7 @@
 
             <div class="info-row">
               <span class="label">จำนวนเงิน</span>
-              <span :class="['value', 'amount',
+              <span :class="['value','amount',
                 item.type === 'income' ? 'income' : 'expense']">
                 {{ item.type === 'income' ? '+' : '-' }}{{ item.amount }}
               </span>
@@ -69,6 +69,7 @@
                 ลบรายการ
               </ion-button>
             </div>
+
           </ion-card-content>
         </ion-card>
       </div>
@@ -78,17 +79,30 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
   IonCard, IonCardHeader, IonCardTitle, IonCardContent,
   IonButton, IonIcon, alertController,
   onIonViewWillEnter
 } from '@ionic/vue'
+
 import { createOutline, trashOutline } from 'ionicons/icons'
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore'
-import { db } from '@/firebase'
+
+import {
+  collection,
+  getDocs,
+  deleteDoc,
+  doc,
+  query,
+  where
+} from 'firebase/firestore'
+
+import { onAuthStateChanged } from "firebase/auth"
+import { db, auth } from '@/firebase'
 
 const router = useRouter()
 const transactions = ref<any[]>([])
@@ -102,19 +116,30 @@ const categoryMap: Record<string, string> = {
   credit_card_debt: 'หนี้บัตรเครดิต'
 }
 
-const fetchTransactions = async () => {
-  try {
-    const querySnapshot = await getDocs(collection(db, "transactions"))
+const fetchTransactions = () => {
+
+  onAuthStateChanged(auth, async (user) => {
+
+    if (!user) return
+
+    const q = query(
+      collection(db, "transactions"),
+      where("uid", "==", user.uid)
+    )
+
+    const querySnapshot = await getDocs(q)
+
     transactions.value = querySnapshot.docs.map(docSnap => ({
       id: docSnap.id,
       ...docSnap.data()
     }))
-  } catch (error) {
-    console.error("โหลดข้อมูลไม่สำเร็จ:", error)
-  }
+
+  })
+
 }
 
 const deleteItem = async (id: string) => {
+
   const alert = await alertController.create({
     header: 'ยืนยันการลบรายการ',
     message: 'คุณแน่ใจใช่หรือไม่ที่จะลบข้อมูลนี้?',
@@ -138,13 +163,14 @@ const editItem = (id: string) => {
   router.push(`/add-transaction/${id}`)
 }
 
-/* 🔥 โหลดใหม่ทุกครั้งที่กลับเข้าหน้า */
 onIonViewWillEnter(() => {
   fetchTransactions()
 })
+
 </script>
 
 <style scoped>
+
 .header-gradient {
   --background: linear-gradient(to right, #8de4fb, #acc7f3);
   --color: #333;
@@ -153,7 +179,7 @@ onIonViewWillEnter(() => {
 .transaction-card {
   margin-bottom: 16px;
   border-radius: 12px;
-  box-shadow: 7px 10px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 7px 10px 12px rgba(0,0,0,0.1);
   --background: #ffffff;
 }
 
@@ -197,4 +223,5 @@ onIonViewWillEnter(() => {
 .delete-btn {
   --color: #ff5252;
 }
+
 </style>
