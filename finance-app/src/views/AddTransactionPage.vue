@@ -97,7 +97,7 @@ import { ref } from 'vue'
 import { onIonViewWillEnter } from '@ionic/vue'
 
 import { collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore'
-import { getAuth } from 'firebase/auth' 
+import { getAuth } from 'firebase/auth'
 import { db } from '@/firebase'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -114,71 +114,75 @@ const amount = ref('')
 const note = ref('')
 const selectedDate = ref('')
 
-/* ฟังก์ชันโหลดข้อมูลทุกครั้งที่เข้าหน้า (ถ้าเป็นการกดเข้ามาแก้ไข) */
 onIonViewWillEnter(async () => {
+
   if (transactionId) {
+
     const docRef = doc(db, 'transactions', transactionId)
     const docSnap = await getDoc(docRef)
 
     if (docSnap.exists()) {
+
       const data = docSnap.data()
+
       selectedType.value = data.type
       category.value = data.category
       amount.value = data.amount
       note.value = data.note
       selectedDate.value = data.date
+
     }
-  } else {
-    // เคลียร์ฟอร์มถ้าเป็นโหมดเพิ่มข้อมูลใหม่
-    selectedType.value = 'income'
-    category.value = ''
-    amount.value = ''
-    note.value = ''
-    selectedDate.value = ''
+
   }
+
 })
 
-/* ฟังก์ชันบันทึก / อัปเดตข้อมูล */
 const saveTransaction = async () => {
+
   try {
+
     if (!category.value || !amount.value) {
       alert('กรุณากรอกข้อมูลให้ครบ')
       return
     }
 
-    // 1. เรียกดูว่าใครกำลังล็อคอินอยู่
     const auth = getAuth()
     const user = auth.currentUser
 
     if (!user) {
-      alert('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง')
+      alert('กรุณา login ก่อน')
       return
     }
 
-    // 2. ปั้นข้อมูลและยัด userId ใส่เข้าไปด้วย
     const payload = {
+
       type: selectedType.value,
       category: category.value,
       amount: Number(amount.value),
       note: note.value,
       date: selectedDate.value,
-      userId: user.uid 
+      userId: user.uid
+
     }
 
     if (transactionId) {
+
       await updateDoc(doc(db, 'transactions', transactionId), payload)
-      console.log('การดำเนินการสำเร็จ: อัปเดตข้อมูลเรียบร้อยแล้ว')
+
     } else {
+
       await addDoc(collection(db, 'transactions'), payload)
-      console.log('การดำเนินการสำเร็จ: บันทึกข้อมูลใหม่เรียบร้อยแล้ว')
+
     }
 
-    // เด้งกลับไปหน้าธุรกรรมแบบไม่ย้อนหน้าเดิม
-    router.replace('/tabs/transactions')
+    router.push('/tabs/transactions')
 
   } catch (error) {
-    console.error('ระบบขัดข้อง: เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล', error)
+
+    console.error(error)
+
   }
+
 }
 </script>
 

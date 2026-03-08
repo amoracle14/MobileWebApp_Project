@@ -1,3 +1,4 @@
+```vue
 <template>
   <ion-page>
     <ion-header class="ion-no-border">
@@ -16,8 +17,10 @@
 
       <div v-for="item in transactions" :key="item.id">
         <ion-card class="transaction-card">
+
           <ion-card-header>
             <div class="card-header-row">
+
               <ion-card-title class="type-title">
                 {{
                   item.type === 'income' ? 'รายการรายรับ' :
@@ -31,46 +34,68 @@
                 size="small"
                 @click="editItem(item.id)"
                 class="edit-btn">
+
                 <ion-icon slot="start" :icon="createOutline" />
                 แก้ไข
+
               </ion-button>
+
             </div>
           </ion-card-header>
 
           <ion-card-content>
-            <div class="info-row">
-              <span class="label">หมวดหมู่</span>
-              <span class="value">{{ categoryMap[item.category] || item.category }}</span>
-            </div>
 
             <div class="info-row">
-              <span class="label">จำนวนเงิน</span>
-              <span :class="['value','amount',
-                item.type === 'income' ? 'income' : 'expense']">
-                {{ item.type === 'income' ? '+' : '-' }}{{ item.amount }}
+              <span class="label">หมวดหมู่</span>
+              <span class="value">
+                {{ categoryMap[item.category] || item.category || '-' }}
               </span>
             </div>
 
             <div class="info-row">
+              <span class="label">จำนวนเงิน</span>
+
+              <span
+                :class="[
+                  'value',
+                  'amount',
+                  item.type === 'income' ? 'income' : 'expense'
+                ]">
+
+                {{ item.type === 'income' ? '+' : '-' }}
+                {{ item.amount }}
+
+              </span>
+
+            </div>
+
+            <div class="info-row">
               <span class="label">วันที่</span>
+
               <span class="value">
-                {{ item.date ? new Date(item.date).toLocaleDateString() : '-' }}
+                {{ formatDate(item.date) }}
               </span>
             </div>
 
             <div class="info-row">
               <span class="label">รายละเอียด</span>
-              <span class="value">{{ item.note }}</span>
+              <span class="value">{{ item.note || '-' }}</span>
             </div>
 
             <div class="ion-text-right">
-              <ion-button fill="clear" class="delete-btn" @click="deleteItem(item.id)">
+              <ion-button
+                fill="clear"
+                class="delete-btn"
+                @click="deleteItem(item.id)">
+
                 <ion-icon slot="start" :icon="trashOutline" />
                 ลบรายการ
+
               </ion-button>
             </div>
 
           </ion-card-content>
+
         </ion-card>
       </div>
 
@@ -80,17 +105,26 @@
 
 <script setup lang="ts">
 
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref } from "vue"
+import { useRouter } from "vue-router"
 
 import {
-  IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
-  IonCard, IonCardHeader, IonCardTitle, IonCardContent,
-  IonButton, IonIcon, alertController,
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  IonButton,
+  IonIcon,
+  alertController,
   onIonViewWillEnter
-} from '@ionic/vue'
+} from "@ionic/vue"
 
-import { createOutline, trashOutline } from 'ionicons/icons'
+import { createOutline, trashOutline } from "ionicons/icons"
 
 import {
   collection,
@@ -98,22 +132,36 @@ import {
   deleteDoc,
   doc,
   query,
-  where
-} from 'firebase/firestore'
+  where,
+  orderBy
+} from "firebase/firestore"
 
 import { onAuthStateChanged } from "firebase/auth"
-import { db, auth } from '@/firebase'
+
+import { db, auth } from "@/firebase"
 
 const router = useRouter()
+
 const transactions = ref<any[]>([])
 
 const categoryMap: Record<string, string> = {
-  food: 'ค่าอาหาร',
-  travel: 'ค่าเดินทาง',
-  personal: 'ของใช้ส่วนตัว',
-  parttime: 'ค่าจ้าง / งานพิเศษ',
-  shopping: 'ช้อปปิ้ง',
-  credit_card_debt: 'หนี้บัตรเครดิต'
+  food: "อาหาร",
+  travel: "การเดินทาง",
+  shopping: "ช้อปปิ้ง",
+  salary: "เงินเดือน",
+  other: "อื่นๆ"
+}
+
+const formatDate = (date: any) => {
+
+  if (!date) return "-"
+
+  if (date.seconds) {
+    return new Date(date.seconds * 1000).toLocaleDateString()
+  }
+
+  return new Date(date).toLocaleDateString()
+
 }
 
 const fetchTransactions = () => {
@@ -123,15 +171,20 @@ const fetchTransactions = () => {
     if (!user) return
 
     const q = query(
+
       collection(db, "transactions"),
-      where("uid", "==", user.uid)
+      where("userId", "==", user.uid),
+      orderBy("date", "desc")
+
     )
 
     const querySnapshot = await getDocs(q)
 
-    transactions.value = querySnapshot.docs.map(docSnap => ({
+    transactions.value = querySnapshot.docs.map((docSnap) => ({
+
       id: docSnap.id,
       ...docSnap.data()
+
     }))
 
   })
@@ -141,30 +194,48 @@ const fetchTransactions = () => {
 const deleteItem = async (id: string) => {
 
   const alert = await alertController.create({
-    header: 'ยืนยันการลบรายการ',
-    message: 'คุณแน่ใจใช่หรือไม่ที่จะลบข้อมูลนี้?',
+
+    header: "ยืนยันการลบรายการ",
+    message: "คุณแน่ใจใช่หรือไม่ที่จะลบข้อมูลนี้?",
+
     buttons: [
-      { text: 'ยกเลิก', role: 'cancel' },
+
       {
-        text: 'ลบ',
-        role: 'destructive',
+        text: "ยกเลิก",
+        role: "cancel"
+      },
+
+      {
+        text: "ลบ",
+        role: "destructive",
+
         handler: async () => {
+
           await deleteDoc(doc(db, "transactions", id))
+
           fetchTransactions()
+
         }
       }
+
     ]
+
   })
 
   await alert.present()
+
 }
 
 const editItem = (id: string) => {
+
   router.push(`/add-transaction/${id}`)
+
 }
 
 onIonViewWillEnter(() => {
+
   fetchTransactions()
+
 })
 
 </script>
@@ -201,7 +272,7 @@ onIonViewWillEnter(() => {
 
 .label {
   color: #666;
-  min-width: 80px;
+  min-width: 90px;
 }
 
 .value {
@@ -213,15 +284,16 @@ onIonViewWillEnter(() => {
 }
 
 .income {
-  color: #4cd137;
+  color: #2ecc71;
 }
 
 .expense {
-  color: #ff5252;
+  color: #e74c3c;
 }
 
 .delete-btn {
-  --color: #ff5252;
+  --color: #e74c3c;
 }
 
 </style>
+```

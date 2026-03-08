@@ -17,7 +17,7 @@
         <div v-if="loading" class="loading-text">กำลังโหลดข้อมูล...</div>
 
         <div v-else-if="days.length === 0" class="loading-text">
-          ยังไม่มีข้อมูลรายการ
+          ยังไม่มีข้อมูลของผู้ใช้นี้
         </div>
 
         <div v-else>
@@ -61,7 +61,7 @@
                 </div>
 
                 <div class="item-name">
-                  {{ item.note || item.category || 'ไม่ระบุรายการ' }}
+                  {{ item.note?.trim() || item.category || 'ไม่ระบุรายการ' }}
                 </div>
 
                 <div
@@ -130,7 +130,8 @@ import {
   pieChartOutline,
   personOutline
 } from 'ionicons/icons'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, query, where } from 'firebase/firestore'
+import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { db } from '../firebase'
 
 type Transaction = {
@@ -140,6 +141,7 @@ type Transaction = {
   date: string
   note: string
   type: 'income' | 'expense'
+  userId: string
 }
 
 type DayGroup = {
@@ -170,21 +172,21 @@ function formatDisplayDate(dateStr: string) {
 function getCategoryIcon(category: string, type: string) {
   const map: Record<string, string> = {
     food: '🍔',
-    travel: '🚌',
     shopping: '🛒',
-    salary: '💰',
+    travel: '🚌',
+    salary: '💼',
     parttime: '💵',
     gift: '🎁',
     house: '🏠',
     health: '💊',
     education: '📚',
     other: '📦',
+    income: '💰',
+    expense: '💸',
     อาหาร: '🍔',
     ของใช้: '🛒',
-    โบนัส: '🎁',
-    รายได้: '💰',
-    ค่าเดินทาง: '🚌',
-    ช้อปปิ้ง: '🛍️'
+    ช้อปปิ้ง: '🛍️',
+    รายได้: '💰'
   }
 
   if (map[category]) return map[category]
@@ -203,11 +205,16 @@ function getFakeTime(date: string, id: string) {
   return mockTimes[sum % mockTimes.length]
 }
 
-async function loadTransactions() {
+async function loadTransactionsByUser(uid: string) {
   try {
     loading.value = true
 
-    const snapshot = await getDocs(collection(db, 'transactions'))
+    const q = query(
+      collection(db, 'transactions'),
+      where('userId', '==', uid)
+    )
+
+    const snapshot = await getDocs(q)
     const transactions: Transaction[] = []
 
     snapshot.forEach((docSnap) => {
@@ -219,7 +226,8 @@ async function loadTransactions() {
         category: data.category || 'other',
         date: data.date || '',
         note: data.note || '',
-        type: data.type === 'income' ? 'income' : 'expense'
+        type: data.type === 'income' ? 'income' : 'expense',
+        userId: data.userId || ''
       })
     })
 
@@ -262,13 +270,23 @@ async function loadTransactions() {
     )
   } catch (error) {
     console.error('โหลด transactions ไม่สำเร็จ:', error)
+    days.value = []
   } finally {
     loading.value = false
   }
 }
 
 onMounted(() => {
-  loadTransactions()
+  const auth = getAuth()
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      await loadTransactionsByUser(user.uid)
+    } else {
+      days.value = []
+      loading.value = false
+    }
+  })
 })
 </script>
 
