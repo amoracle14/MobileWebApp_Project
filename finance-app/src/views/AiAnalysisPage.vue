@@ -5,7 +5,7 @@
       <div class="header-container">
         <div class="header-top">
             <ion-button fill="clear" class="back-btn" @click="goBack">
-            <ion-icon :icon="arrowBack" slot="icon-only" color="dark"></ion-icon>
+              <ion-icon :icon="arrowBack" slot="icon-only" color="dark"></ion-icon>
             </ion-button>
         </div>
 
@@ -13,16 +13,55 @@
             <div class="avatar-glow">
               <img src="/gojo.jpg" alt="AI Avatar" />
             </div>
-            <h1 class="persona-title">{{ isLoading ? 'Analyzing...' : aiResult.personaName }}</h1>
-            <p class="persona-subtitle">ผลการวิเคราะห์พฤติกรรมการใช้จ่าย</p>
+            <h1 class="persona-title">
+              {{ !hasAnalyzed ? 'AI Assistant' : (isLoading ? 'Analyzing...' : aiResult.personaName) }}
+            </h1>
+            <p class="persona-subtitle">ผู้ช่วยวิเคราะห์พฤติกรรมการใช้จ่าย</p>
         </div>
       </div>
 
       <div class="main-content-container">
         
-        <div v-if="isLoading" class="loading-container text-center">
+        <div v-if="!hasAnalyzed && !isLoading" class="pre-analysis-container">
+            <h3 class="section-title">ข้อมูลพื้นฐานของคุณ</h3>
+            
+            <ion-card class="basic-stat-card">
+              <ion-card-content>
+                <ion-grid>
+                  <ion-row>
+                    <ion-col size="6" class="stat-box">
+                      <p class="stat-label">รายรับรวม</p>
+                      <h3 class="stat-value text-success">฿{{ formatMoney(financeStore.totalIncome) }}</h3>
+                    </ion-col>
+                    <ion-col size="6" class="stat-box">
+                      <p class="stat-label">รายจ่ายรวม</p>
+                      <h3 class="stat-value text-danger">฿{{ formatMoney(financeStore.totalExpense) }}</h3>
+                    </ion-col>
+                    <ion-col size="6" class="stat-box">
+                      <p class="stat-label">หนี้สินรวม</p>
+                      <h3 class="stat-value text-warning">฿{{ formatMoney(financeStore.totalDebt) }}</h3>
+                    </ion-col>
+                    <ion-col size="6" class="stat-box">
+                      <p class="stat-label">เงินคงเหลือ</p>
+                      <h3 class="stat-value text-primary">฿{{ formatMoney(financeStore.netBalance) }}</h3>
+                    </ion-col>
+                  </ion-row>
+                </ion-grid>
+              </ion-card-content>
+            </ion-card>
+
+            <div class="action-wrapper text-center ion-margin-top">
+              <p class="text-muted">ให้ระบบ AI ช่วยวิเคราะห์เชิงลึกและวางแผนการเงินจากข้อมูลเหล่านี้ไหม?</p>
+              <ion-button expand="block" shape="round" class="ai-btn ion-margin-top" @click="generateAIAnalysis">
+                 <ion-icon :icon="sparkles" slot="start"></ion-icon>
+                 วิเคราะห์ข้อมูลด้วย AI
+              </ion-button>
+            </div>
+        </div>
+
+        <div v-else-if="isLoading" class="loading-container text-center">
             <ion-spinner name="crescent" color="primary" class="loading-spinner"></ion-spinner>
-            <p class="loading-text">ระบบกำลังประมวลผลข้อมูลทางการเงิน...</p>
+            <p class="loading-text">ระบบ AI กำลังประมวลผลข้อมูลทางการเงิน...</p>
         </div>
 
         <div v-else>
@@ -102,6 +141,12 @@
                     </ion-item>
                 </ion-card>
             </div>
+            
+            <div class="text-center" style="margin-bottom: 40px;">
+                <ion-button fill="clear" color="medium" @click="resetAnalysis">
+                    วิเคราะห์ใหม่อีกครั้ง
+                </ion-button>
+            </div>
         </div>
       </div>
 
@@ -118,7 +163,8 @@ import {
 } from '@ionic/vue';
 import { 
   analytics, alertCircle, thumbsUp, flag, 
-  checkmarkCircle, arrowBack, star, trashOutline 
+  checkmarkCircle, arrowBack, star, trashOutline,
+  sparkles
 } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import { ref, onMounted } from 'vue';
@@ -131,17 +177,19 @@ const goBack = () => {
   router.push('/tabs/habits'); 
 };
 
-const isLoading = ref(true);
+// ตัวแปรควบคุมสถานะหน้าจอ
+const hasAnalyzed = ref(false); 
+const isLoading = ref(false); 
 const showActionPlan = ref(true); 
 
 // ตัวแปรสำหรับเก็บรายการเป้าหมายที่กดรับทราบแล้ว
 const savedGoals = ref<{title: string, desc: string}[]>([]);
 
 const aiResult = ref({
-    personaName: 'กำลังวิเคราะห์ข้อมูล...',
+    personaName: '-',
     score: 0,
     status: '-',
-    scoreDesc: 'รอการประมวลผล...',
+    scoreDesc: '-',
     warningTitle: '-',
     warningDesc: '-',
     strengthTitle: '-',
@@ -164,6 +212,11 @@ const categoryMap: Record<string, string> = {
   'parttime': 'รับจ๊อบพิเศษ'
 };
 
+// ฟังก์ชันแปลงตัวเลขให้มีคอมม่า (เช่น 1,000)
+const formatMoney = (amount: number) => {
+  return new Intl.NumberFormat('th-TH').format(amount || 0);
+};
+
 onMounted(async () => {
     // โหลดเป้าหมายที่เคยบันทึกไว้
     const storedGoals = localStorage.getItem('ai_saved_goals');
@@ -171,14 +224,15 @@ onMounted(async () => {
         savedGoals.value = JSON.parse(storedGoals);
     }
 
+    // ถ้ายังไม่มีข้อมูลให้ดึงมาก่อน แต่ *ไม่สั่ง AI ทำงาน* ปล่อยให้ผู้ใช้ดูข้อมูลเฉยๆ ก่อน
     if (financeStore.transactions.length === 0) {
         await financeStore.fetchTransactions();
     }
-    // กลับมายิงออโต้เหมือนเดิม
-    await generateAIAnalysis();
 });
 
+// ฟังก์ชันเริ่มทำงานเมื่อกดปุ่ม "วิเคราะห์ด้วย AI"
 const generateAIAnalysis = async () => {
+    hasAnalyzed.value = true;
     isLoading.value = true;
     showActionPlan.value = true; 
     try {
@@ -187,11 +241,10 @@ const generateAIAnalysis = async () => {
         }
 
         const allTxs = financeStore.transactions;
-        
-        const income = allTxs.filter((t: any) => t.type === 'income').reduce((sum: number, t: any) => sum + Number(t.amount), 0);
-        const expense = allTxs.filter((t: any) => t.type === 'expense').reduce((sum: number, t: any) => sum + Number(t.amount), 0);
-        const debt = allTxs.filter((t: any) => t.type === 'debt').reduce((sum: number, t: any) => sum + Number(t.amount), 0);
-        const balance = income - expense - debt;
+        const income = financeStore.totalIncome;
+        const expense = financeStore.totalExpense;
+        const debt = financeStore.totalDebt;
+        const balance = financeStore.netBalance;
         
         const outflows = allTxs.filter((t: any) => t.type === 'expense' || t.type === 'debt');
         const grouped = outflows.reduce((acc: any, curr: any) => {
@@ -224,6 +277,7 @@ const generateAIAnalysis = async () => {
         }
         `;
 
+        // สังเกตว่าพี่ปรับมาใช้ flash-lite ให้เลย จะได้เซฟโควต้า!
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -234,12 +288,8 @@ const generateAIAnalysis = async () => {
 
         if (!response.ok) {
             const errorDetails = await response.json();
-            console.error("รายละเอียด Error จาก Google:", errorDetails);
-            
             if (response.status === 429) {
                 throw new Error('โควต้า AI เต็มชั่วคราว โปรดรอสัก 1 นาทีแล้วลองใหม่');
-            } else if (response.status === 400) {
-                throw new Error('รูปแบบข้อมูลที่ส่งไปไม่ถูกต้อง (Bad Request)');
             }
             throw new Error(`การเชื่อมต่อล้มเหลว: ${errorDetails.error?.message || 'โปรดตรวจสอบ API Key'}`);
         }
@@ -258,15 +308,19 @@ const generateAIAnalysis = async () => {
             status: 'เชื่อมต่อล้มเหลว',
             scoreDesc: error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์',
             warningTitle: 'ปัญหาการดึงข้อมูล',
-            warningDesc: error.message || 'ไม่สามารถติดต่อปัญญาประดิษฐ์ได้ โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตหรือการตั้งค่าสภาพแวดล้อม (.env)',
+            warningDesc: error.message || 'ไม่สามารถติดต่อปัญญาประดิษฐ์ได้ โปรดตรวจสอบการตั้งค่า',
             strengthTitle: '-',
             strengthDesc: '-',
             actionTitle: 'แนวทางการแก้ไข',
-            actionDesc: 'โปรดตรวจสอบความถูกต้องของ API Key ในไฟล์ .env หรือหากโควต้าเต็ม โปรดรอสักครู่แล้วทำรายการใหม่'
+            actionDesc: 'โปรดลองใหม่อีกครั้งในภายหลัง'
         };
     } finally {
         isLoading.value = false;
     }
+};
+
+const resetAnalysis = () => {
+    hasAnalyzed.value = false;
 };
 
 const acceptMission = async () => {
@@ -348,6 +402,31 @@ const getProgressBarColor = (score: number) => {
     padding: 0 20px; margin-top: -40px; position: relative; z-index: 10;
 }
 
+/* 🟢 Pre-Analysis Container (หน้าใหม่) */
+.pre-analysis-container {
+    margin-top: 20px;
+}
+.basic-stat-card {
+    border-radius: 16px; box-shadow: 0 10px 20px rgba(0,0,0,0.08); margin-inline: 0;
+}
+.stat-box {
+    text-align: center;
+    padding: 15px 5px;
+    border-bottom: 1px solid #f1f2f6;
+}
+.stat-box:nth-child(1), .stat-box:nth-child(3) { border-right: 1px solid #f1f2f6; }
+.stat-box:nth-child(3), .stat-box:nth-child(4) { border-bottom: none; }
+
+.stat-label { color: #636e72; font-size: 0.85rem; margin-bottom: 5px; margin-top: 0; }
+.stat-value { font-weight: bold; font-size: 1.2rem; margin: 0; }
+.text-success { color: #00b894; }
+.text-danger { color: #ff7675; }
+.text-warning { color: #fdcb6e; }
+.text-primary { color: #0984e3; }
+
+.ai-btn { --background: linear-gradient(90deg, #74d7e9 0%, #b2cff4 100%); font-weight: bold; color: #2d3436; height: 50px; }
+.text-muted { color: #888; font-size: 0.9rem; margin-top: 20px; }
+
 /* Loading Spinner */
 .loading-container {
     background: white; border-radius: 16px; padding: 50px 20px;
@@ -358,7 +437,7 @@ const getProgressBarColor = (score: number) => {
 
 /* Score Card */
 .score-card {
-  border-radius: 16px; box-shadow: 0 10px 20px rgba(0,0,0,0.08); margin-bottom: 25px;
+  border-radius: 16px; box-shadow: 0 10px 20px rgba(0,0,0,0.08); margin-bottom: 25px; margin-inline: 0;
 }
 .score-circle {
   width: 50px; height: 50px; border-radius: 50%; 
