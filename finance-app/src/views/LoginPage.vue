@@ -7,7 +7,7 @@
 
         <div class="login-card">
 
-          <h2>ล็อคอิน</h2>
+          <h2>เข้าสู่ระบบ</h2>
 
           <ion-input
             class="input-box"
@@ -26,7 +26,7 @@
         
 
           <ion-button expand="block" class="login-btn" @click="login">
-            ล็อคอิน
+            เข้าสู่ระบบ
           </ion-button>
 
           <div class="divider">
@@ -52,6 +52,7 @@ import { useRouter } from "vue-router"
 
 import { signInWithEmailAndPassword } from "firebase/auth"
 import { auth } from "@/firebase"
+import { alertController } from "@ionic/vue"
 
 import {
   IonPage,
@@ -68,10 +69,22 @@ const email = ref("")
 const password = ref("")
 const router = useRouter()
 
+const showErrorAlert = async (message) => {
+
+  const alert = await alertController.create({
+    header: "ไม่สามารถเข้าสู่ระบบได้",
+    message: message,
+    buttons: ["OK"]
+  })
+
+  await alert.present()
+
+}
+
 const login = async () => {
 
   if(!email.value || !password.value){
-    alert("กรุณากรอก Email และ Password")
+    await showErrorAlert("กรุณากรอก Email และ Password")
     return
   }
 
@@ -83,13 +96,11 @@ const login = async () => {
       password.value
     )
 
-    alert("Login success")
-
     router.push("/tabs/home")
 
   } catch(error){
 
-    alert(error.message)
+    await showErrorAlert("กรุณากรอก Email หรือ Password ให้ถูกต้อง")
 
   }
 

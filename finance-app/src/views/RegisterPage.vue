@@ -37,7 +37,7 @@
             fill="clear"
             router-link="/login"
             class="back-login">
-            กลับไป ล็อคอิน
+            กลับไป เข้าสู่ระบบ
           </ion-button>
 
         </div>
@@ -67,7 +67,26 @@ const email = ref("")
 const password = ref("")
 const router = useRouter()
 
+import { alertController } from "@ionic/vue"
+
+const showAlert = async (message) => {
+
+  const alert = await alertController.create({
+    header: "แจ้งเตือน",
+    message: message,
+    buttons: ["OK"]
+  })
+
+  await alert.present()
+
+}
+
 const register = async () => {
+
+  if(!email.value || !password.value){
+    await showAlert("กรุณากรอก Email และ Password ให้ถูกต้อง")
+    return
+  }
 
   try {
 
@@ -77,13 +96,13 @@ const register = async () => {
       password.value
     )
 
-    alert("สมัครสำเร็จ")
+    await showAlert("สมัครสำเร็จ")
 
     router.push("/login")
 
   } catch(error){
 
-    alert(error.message)
+    await showAlert("ไม่สามารถสมัครสมาชิกได้")
 
   }
 
