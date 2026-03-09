@@ -3,7 +3,12 @@
     <ion-header class="ion-no-border">
       <ion-toolbar class="header-toolbar">
         <ion-buttons slot="start">
-          <ion-back-button default-href="/tabs/transactions" text=""></ion-back-button>
+        <ion-back-button
+         default-href="/tabs/transactions"
+         text=""
+         mode="ios">
+       </ion-back-button>
+          
         </ion-buttons>
         <ion-title>
           {{ transactionId ? 'แก้ไขรายการ' : 'เพิ่มรายการ' }}
@@ -174,6 +179,8 @@ const saveTransaction = async () => {
       await addDoc(collection(db, 'transactions'), payload)
 
     }
+
+    (document.activeElement as HTMLElement)?.blur()
 
     router.replace('/tabs/transactions')
 
