@@ -305,7 +305,9 @@ const currentQuestionNumber = computed(() => {
 const progress = computed(() => currentQuestionNumber.value / totalQuestions)
 
 /** ✅ เก็บคำตอบ */
-const answers = reactive<Record<number, string>>({})
+const answers = reactive<Record<number, 'A' | 'B'>>(
+  history.state?.answers ?? {}
+)
 
 /** ✅ บังคับตอบครบ 5 ข้อในหน้านี้ */
 const isAllAnsweredOnPage = computed(() => {
@@ -326,7 +328,12 @@ const next = () => {
 
   // ไปหน้าถัดไป
   if (currentPage.value < totalPages) {
-    router.push(`/quiz/${currentPage.value + 1}`)
+    router.push({
+  path: `/quiz/${currentPage.value + 1}`,
+  state: {
+    answers: JSON.parse(JSON.stringify(answers))
+  }
+})
     return
   }
 
@@ -335,6 +342,9 @@ const next = () => {
     path: '/result',
     state: { answers: JSON.parse(JSON.stringify(answers)) }
   })
+  
+  
+  
 }
 </script>
 

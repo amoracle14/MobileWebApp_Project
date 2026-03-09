@@ -15,11 +15,11 @@
 
               <div class="wallet-balance">
                 <h2>฿ {{ balance.toLocaleString() }}</h2>
-                <p>บัญชี : xxx-x-xx890-x</p>
+                
               </div>
             </div>
 
-            <ion-icon :icon="menuOutline" class="menu-icon"></ion-icon>
+            
           </div>
 
           <div class="wallet-card-main">
