@@ -3,7 +3,7 @@
     <ion-content class="register-bg">
 
       <div class="register-container">
-
+        <img src="/LogoProject.png" class="logo" />
         <div class="register-card">
 
           <h2>สมัครสมาชิก</h2>
@@ -118,6 +118,7 @@ const register = async () => {
 
 .register-container{
   display:flex;
+  flex-direction:column;
   justify-content:center;
   align-items:center;
   height:100%;
@@ -137,6 +138,11 @@ const register = async () => {
   color:#2c3e50;
   margin-bottom:25px;
   font-weight:600;
+}
+.logo{
+  width:120px;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+  margin-bottom: 40px;
 }
 
 .input-box{
