@@ -194,7 +194,7 @@ const financeStore = useFinanceStore();
 
 const periodFilter = ref('เดือนนี้'); 
 
-// 🔥 เพิ่มตัวแปรเช็คว่ากดปุ่มวิเคราะห์หรือยัง
+
 const hasTriggeredAI = ref(false);
 const isAILoading = ref(false);
 const aiSummary = ref({
@@ -228,7 +228,7 @@ onMounted(async () => {
 });
 
 watch(periodFilter, () => {
-  // 🔥 ถ้ายูสเซอร์เปลี่ยนเดือน ให้ซ่อนผลลัพธ์เก่าแล้วโชว์ปุ่มใหม่
+
   hasTriggeredAI.value = false;
 });
 
