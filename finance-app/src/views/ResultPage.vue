@@ -12,15 +12,6 @@
         <div class="heroCenter">
           <div class="heroTitle">{{ profile.title }}</div>
           <div class="heroCode">{{ code }}</div>
-
-          <!-- Pig icon -->
-          <div class="pigWrap">
-            <img
-                src="../assets/piggy-bank.png"
-                alt="Pig icon"
-                class="pigImg"
-            />
-            </div>
         </div>
 
 
@@ -34,17 +25,7 @@
           <div class="desc">{{ profile.description }}</div>
         </div>
 
-        <!-- (Optional) breakdown line -->
-        <div class="mini">
-          <div class="miniTitle">สรุปคะแนนรายมิติ</div>
-          <div class="miniRow">
-            <span class="pill">P {{ scores.P }} / I {{ scores.I }}</span>
-            <span class="pill">S {{ scores.S }} / D {{ scores.D }}</span>
-            <span class="pill">R {{ scores.R }} / E {{ scores.E }}</span>
-            <span class="pill">C {{ scores.C }} / V {{ scores.V }}</span>
-          </div>
-        </div>
-
+    
         <div class="card">
           <div class="cardTitle">จุดเด่น</div>
           <ul class="list">
@@ -93,7 +74,11 @@ type Profile = {
 const route = useRoute()
 const router = useRouter()
 
-const answers = computed<AnswerMap>(() => ((route.state as any)?.answers ?? {}) as AnswerMap)
+import { reactive } from 'vue'
+
+const answers = reactive<AnswerMap>({
+  ...(history.state?.answers || {})
+})
     /**มันแดง แต่มันใช้ได้นะทุกคนนนนน **/ 
 
 
@@ -102,11 +87,14 @@ const answers = computed<AnswerMap>(() => ((route.state as any)?.answers ?? {}) 
 function countAB(ids: number[]) {
   let A = 0
   let B = 0
+
   for (const id of ids) {
-    const a = answers.value[id]
+    const a = answers[id]
+
     if (a === 'A') A++
     if (a === 'B') B++
   }
+
   return { A, B }
 }
 
@@ -233,7 +221,11 @@ const PROFILES: Record<Profile['key'], Profile> = {
       'ความกลัวการสูญเสียอาจจำกัดโอกาสในอนาคต'
     ]
   }
+  
+  
 }
+
+
 
 /**
  * ✅ เลือกโปรไฟล์จาก “คอมโบ 4 มิติ”
@@ -250,9 +242,22 @@ const profile = computed<Profile>(() => {
   const d3 = dim3.value
   const d4 = dim4.value
 
-  if (d4 === 'V') return PROFILES.investor
-  if (d4 === 'C' && d2 === 'S') return PROFILES.saver
-  if (d1 === 'P' && d3 === 'R') return PROFILES.planner
+  // Planner
+  if (d1 === 'P' && d2 === 'S' && d3 === 'R') {
+    return PROFILES.planner
+  }
+
+  // Investor
+  if (d4 === 'V' && d3 === 'R') {
+    return PROFILES.investor
+  }
+
+  // Saver
+  if (d2 === 'S' && d4 === 'C') {
+    return PROFILES.saver
+  }
+
+  // default
   return PROFILES.spender
 })
 
@@ -262,6 +267,14 @@ function goBack() {
 function goHome() {
   router.push('/tabs/home')
 }
+
+import { watchEffect } from 'vue'
+
+watchEffect(() => {
+  console.log("answers:", answers)
+  console.log("code:", code.value)
+  console.log("profile:", profile.value)
+})
 </script>
 
 <style scoped>
@@ -410,6 +423,207 @@ function goHome() {
 ion-button {
   --background: #76d6ff;
   --color: #fff;
-  --border-radius: 8px;
+  --border-radius: 8px;.result-bg{
+  --background:#f2f2f2;
+}
+
+/* ---------------- HERO ---------------- */
+
+.hero{
+  position:relative;
+  height:240px;
+  overflow:hidden;
+  background:linear-gradient(135deg,#7dd3fc,#a5b4fc);
+}
+
+/* bubble decoration */
+.hero::before{
+  content:"";
+  position:absolute;
+  width:280px;
+  height:280px;
+  border-radius:50%;
+  background:rgba(255,255,255,.15);
+  top:-120px;
+  right:-80px;
+}
+
+.hero::after{
+  content:"";
+  position:absolute;
+  width:200px;
+  height:200px;
+  border-radius:50%;
+  background:rgba(255,255,255,.1);
+  bottom:-80px;
+  left:-60px;
+}
+
+/* back button */
+
+.backBtn{
+  position:absolute;
+  top:18px;
+  left:14px;
+  width:40px;
+  height:40px;
+  border:none;
+  border-radius:12px;
+  background:rgba(255,255,255,.4);
+  backdrop-filter:blur(6px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#1f2937;
+}
+
+/* center area */
+
+.heroCenter{
+  position:absolute;
+  top:70px;
+  left:0;
+  right:0;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+}
+
+.heroTitle{
+  font-size:22px;
+  font-weight:900;
+  color:#1f2937;
+}
+
+.heroCode{
+  font-size:12px;
+  font-weight:700;
+  padding:6px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.4);
+  color:#1f2937;
+}
+
+/* wave */
+
+.wave{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:-1px;
+  height:60px;
+  background:#fff;
+  border-top-left-radius:40px;
+  border-top-right-radius:40px;
+}
+
+/* ---------------- CONTENT ---------------- */
+
+.sheet{
+  background:#fff;
+  padding:18px 16px 0;
+  margin-top:-10px;
+}
+
+/* section */
+
+.sectionTitle{
+  font-size:15px;
+  font-weight:900;
+  margin-bottom:6px;
+}
+
+.desc{
+  font-size:14px;
+  line-height:1.6;
+  color:#555;
+  margin-bottom:16px;
+}
+
+/* ---------------- CARD ---------------- */
+
+.card{
+  background:#fff;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:14px;
+  box-shadow:
+    0 4px 12px rgba(0,0,0,.06),
+    0 1px 3px rgba(0,0,0,.08);
+}
+
+.cardTitle{
+  font-size:14px;
+  font-weight:900;
+  margin-bottom:10px;
+}
+
+/* list */
+
+.list{
+  list-style:none;
+  padding:0;
+  margin:0;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.list li{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+
+/* icon */
+
+.icon{
+  width:24px;
+  height:24px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:13px;
+  font-weight:800;
+}
+
+.icon.ok{
+  background:#dcfce7;
+  color:#16a34a;
+}
+
+.icon.warn{
+  background:#fef3c7;
+  color:#d97706;
+}
+
+/* text */
+
+.txt{
+  font-size:13.5px;
+  line-height:1.5;
+  color:#444;
+}
+
+/* ---------------- BUTTON ---------------- */
+
+.actions{
+  margin-top:16px;
+}
+
+ion-button{
+  --background:#38bdf8;
+  --border-radius:10px;
+  font-weight:700;
+}
+
+/* bottom space */
+
+.bottomSpacer{
+  height:28px;
+}
 }
 </style>
