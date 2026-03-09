@@ -175,7 +175,7 @@ const saveTransaction = async () => {
 
     }
 
-    router.push('/tabs/transactions')
+    router.replace('/tabs/transactions')
 
   } catch (error) {
 
