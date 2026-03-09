@@ -1,7 +1,0 @@
-{
-  "name": "finance-app",
-  "integrations": {
-    "capacitor": {}
-  },
-  "type": "vue-vite"
-}

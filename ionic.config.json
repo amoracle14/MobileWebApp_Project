@@ -1,5 +1,7 @@
 {
-  "name": "MOBILEWEBAPP_PROJECT",
-  "integrations": {},
-  "type": "vue"
+  "name": "finance-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
 }
