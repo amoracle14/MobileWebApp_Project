@@ -1,4 +1,4 @@
-```vue
+
 <template>
   <ion-page>
     <ion-content :fullscreen="true">
@@ -6,33 +6,30 @@
       <div class="header-container">
         <img src="/Group 237.png" class="bg-decoration" />
 
-        <div class="content-wrapper">
-          <div class="user-info">
-            <div class="profile-section">
-              <ion-avatar class="avatar">
-                <img :src="avatar" />
-              </ion-avatar>
+<div class="content-wrapper">
+  <div class="user-info">
+    <div class="profile-section">
+      <ion-avatar class="avatar">
+        <img :src="avatar" />
+      </ion-avatar>
 
-              <div class="wallet-balance">
-                <h2>฿ {{ balance.toLocaleString() }}</h2>
-                
-              </div>
-            </div>
+      <div class="wallet-balance">
+        <h2>฿ {{ balance ? balance.toLocaleString() : 0 }}</h2>
+      </div>
+    </div>
+  </div>
 
-            
-          </div>
+  <div class="wallet-card-main">
+    <div class="wallet-icon-container">
+      <img src="/wallet.png" class="wallet-img" />
 
-          <div class="wallet-card-main">
-            <div class="wallet-icon-container">
-              <img src="/wallet.png" class="wallet-img" />
-
-              <div class="wallet-text">
-                <h3>กระเป๋าตังที่ 1</h3>
-                <p>รายรับและรายจ่ายของฉัน</p>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="wallet-text">
+        <h3>กระเป๋าตังที่ 1</h3>
+        <p>รายรับและรายจ่ายของฉัน</p>
+      </div>
+    </div>
+  </div>
+</div>
 
         <div class="stats-badges">
           <div class="test-quiz-card" @click="$router.push('/quiz/1')">
@@ -53,7 +50,7 @@
         </div>
       </div>
 
-      <!-- MAIN CONTENT -->
+
       <!-- MAIN CONTENT -->
       <div class="main-content">
         <h3 class="section-title">รายละเอียด</h3>
@@ -117,7 +114,7 @@
       </div>
 
       <!-- SUMMARY MONTH -->
-      <div class="recent-card" style="margin: 0 1%;">
+      <div class="recent-card" style="margin: 0 1%">
         <div class="summary-card income">
           <div class="summary-text">รายรับเดือนนี้</div>
 
@@ -136,7 +133,7 @@
       </div>
 
       <!-- สรุปรายวันล่าสุด -->
-      <div class="recent-card" style="margin: 1% 1%;">
+      <div class="recent-card" style="margin: 1% 1%">
         <div class="card-header">
           <span><span class="dot"></span>สรุปรายวันล่าสุด</span>
         </div>
@@ -231,10 +228,10 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from "../firebase";
 
-// 
-import { auth} from "@/firebase"
-import { doc, onSnapshot } from "firebase/firestore"
-// 
+//
+import { auth } from "@/firebase";
+import { doc, onSnapshot } from "firebase/firestore";
+//
 
 type Transaction = {
   id: string;
@@ -261,25 +258,25 @@ const incomeMonth = ref(0);
 const expenseMonth = ref(0);
 const balance = ref(0);
 
-const avatar = ref("/gojo.jpg") 
+const avatar = ref("/gojo.jpg");
 
 // โปรไฟล์พื้นหลัง
-onMounted(()=>{
-  onAuthStateChanged(auth,(user)=>{
-    if(user){
-      const userRef = doc(db,"users",user.uid)
-      onSnapshot(userRef,(docSnap)=>{
-        if(docSnap.exists()){
-          const data = docSnap.data()
-          if(data.avatar){
-            avatar.value = data.avatar
+onMounted(() => {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      const userRef = doc(db, "users", user.uid);
+      onSnapshot(userRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.avatar) {
+            avatar.value = data.avatar;
           }
         }
-      })
+      });
     }
-  })
-})
-// 
+  });
+});
+//
 
 const latestTransaction = computed(() => {
   if (!transactions.value.length) return null;
@@ -607,8 +604,7 @@ onMounted(() => {
 .main-content {
   padding: 0 20px;
   background-color: white;
-  z-index: 5; /* อยู่หน้า header */
-  
+
 }
 .section-title {
   font-weight: bold;
@@ -705,8 +701,7 @@ onMounted(() => {
   font-weight: bold;
   font-size: 1rem;
   color: #333;
-  margin-bottom: 10px; /* ระยะห่างจากบรรทัดล่าง */
-  
+
 }
 
 .sub-detail {
