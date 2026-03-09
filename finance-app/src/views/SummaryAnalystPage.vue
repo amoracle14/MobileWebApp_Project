@@ -218,7 +218,7 @@ const groupedData = computed<PeriodSummary[]>(() => {
 const displayData = computed(() => {
   let sorted = [...groupedData.value];
   
-  // กรองตามกำไรขาดทุน โดยคิดหนี้รวมเข้าไปด้วย
+
   if (tableFilter.value === 'profit') {
     sorted = sorted.filter(item => (item.income - item.expense - item.debt) >= 0);
   } else if (tableFilter.value === 'loss') {
@@ -296,9 +296,6 @@ const chartOptions = {
   }
 }
 
-// ==========================================
-// Action Sheets
-// ==========================================
 
 const openGroupSelector = async () => {
   const actionSheet = await actionSheetController.create({

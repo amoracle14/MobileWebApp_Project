@@ -224,13 +224,13 @@ onMounted(async () => {
         savedGoals.value = JSON.parse(storedGoals);
     }
 
-    // ถ้ายังไม่มีข้อมูลให้ดึงมาก่อน แต่ *ไม่สั่ง AI ทำงาน* ปล่อยให้ผู้ใช้ดูข้อมูลเฉยๆ ก่อน
+
     if (financeStore.transactions.length === 0) {
         await financeStore.fetchTransactions();
     }
 });
 
-// ฟังก์ชันเริ่มทำงานเมื่อกดปุ่ม "วิเคราะห์ด้วย AI"
+// ฟังก์ชันเริ่มทำงานเมื่อกดปุ่ม
 const generateAIAnalysis = async () => {
     hasAnalyzed.value = true;
     isLoading.value = true;
@@ -276,8 +276,7 @@ const generateAIAnalysis = async () => {
             "actionDesc": "แนวทางปฏิบัติที่สามารถวัดผลได้ เพื่อพัฒนาสุขภาพทางการเงิน"
         }
         `;
-
-        // สังเกตว่าพี่ปรับมาใช้ flash-lite ให้เลย จะได้เซฟโควต้า!
+    
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -308,7 +307,7 @@ const generateAIAnalysis = async () => {
             status: 'เชื่อมต่อล้มเหลว',
             scoreDesc: error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์',
             warningTitle: 'ปัญหาการดึงข้อมูล',
-            warningDesc: error.message || 'ไม่สามารถติดต่อปัญญาประดิษฐ์ได้ โปรดตรวจสอบการตั้งค่า',
+            warningDesc: error.message || 'ไม่สามารถติดต่อ AI ได้ โปรดตรวจสอบการตั้งค่า',
             strengthTitle: '-',
             strengthDesc: '-',
             actionTitle: 'แนวทางการแก้ไข',
