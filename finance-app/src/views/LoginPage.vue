@@ -3,7 +3,7 @@
     <ion-content class="login-bg">
 
       <div class="login-container">
-
+        <img src="/LogoProject.png" class="logo" />
 
         <div class="login-card">
 
@@ -121,7 +121,11 @@ const login = async () => {
   align-items:center;
   height:100%;
 }
-
+.logo{
+  width:120px;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+  margin-bottom: 40px;
+}
 
 .login-card{
   width:90%;
